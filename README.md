@@ -51,6 +51,8 @@ Automatically detects your browser language (defaults to English) with instant s
 
 ### Running Locally
 ```bash
+git clone https://github.com/sawanose275/unboard-98.git
+cd unboard-98
 python3 -m http.server 5500 --bind 127.0.0.1
 ```
 Open `http://127.0.0.1:5500/` in your browser.
@@ -60,13 +62,13 @@ Open `http://127.0.0.1:5500/` in your browser.
 ## 📁 Project Structure
 
 ```
-UnBoard/
+unboard-98/
 ├── index.html              # Main HTML shell (Windows 98 desktop)
 ├── css/
 │   └── style.css           # Translucent modernized Win98 styling
 ├── js/
 │   ├── i18n.js             # Auto language detection + 10 languages
-│   ├── spotify-auth.js     # OAuth 2.0 PKCE client-side auth
+│   ├── spotify-auth.js     # OAuth 2.0 PKCE + CSRF state client-side auth
 │   ├── spotify-api.js      # Spotify Web API wrapper (/items + /tracks fallback)
 │   ├── sorters.js          # 18 shuffle & sorting algorithms
 │   ├── app.js              # Playlist loading, preview & saving logic
@@ -81,9 +83,11 @@ UnBoard/
 
 ## 🔒 Privacy & Security
 
-- Uses **OAuth 2.0 with PKCE** — no client secret is stored or exposed
-- Tokens and settings stay strictly in your browser's `localStorage`
+- Uses **OAuth 2.0 with PKCE** and cryptographic **`state` (CSRF protection)** — no client secret is stored or exposed
+- Protected with a strict **Content Security Policy (CSP)** and minimal scopes (does not request your private email address)
+- Your Client ID and tokens stay strictly in your own browser (`localStorage` / `sessionStorage`)
 - Communicates directly with the official Spotify API (`api.spotify.com` / `accounts.spotify.com`)
+- **Why do I need my own Spotify App?** Spotify limits apps in Development Mode to 5 manually allowlisted accounts, so bringing your own free Client ID lets anyone use UnBoard 98 privately with zero limits
 - Note: Spotify's API only allows reordering playlists **owned by you** or **collaborative** playlists
 
 ## 📄 License
