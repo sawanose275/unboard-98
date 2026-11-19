@@ -255,10 +255,23 @@
   $('#info-ok').addEventListener('click', hideInfo);
   $('#info-close-x').addEventListener('click', hideInfo);
 
+  function openConfig() {
+    if (isLoggedIn()) {
+      showInfo(I18n.t('configLoggedInTitle'), '⚙️', I18n.t('configLoggedInHtml'));
+      return;
+    }
+    const login = $('#login-screen');
+    login.classList.remove('minimized');
+    renderTaskbar();
+    if (!$('#config-panel').classList.contains('show')) $('#config-toggle').click();
+    $('#client-id').focus();
+  }
+
   function handleCommand(cmd) {
     switch (cmd) {
       case 'about': showInfo(I18n.t('aboutTitle'), '💿', I18n.t('aboutHtml')); break;
       case 'help': showInfo(I18n.t('helpTitle'), '❓', I18n.t('helpHtml')); break;
+      case 'config': openConfig(); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {

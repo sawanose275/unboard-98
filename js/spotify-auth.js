@@ -1,10 +1,7 @@
 /**
- * Spotify Auth — OAuth 2.0 PKCE Flow (100% client-side, no client secret)
+ * Spotify Auth — OAuth 2.0 PKCE Flow (100% client-side, user-supplied Client ID)
  */
 const SpotifyAuth = (() => {
-  // Public OAuth Client ID (safe for public PKCE clients; protected by Redirect URI whitelist + PKCE + state)
-  const CLIENT_ID = '1b20d65f1a934ea6bf1669903760a160';
-
   const SCOPES = [
     'playlist-read-private',
     'playlist-read-collaborative',
@@ -16,19 +13,39 @@ const SpotifyAuth = (() => {
   const TOKEN_KEY = 'unboard_spotify_token';
   const VERIFIER_KEY = 'unboard_code_verifier';
   const STATE_KEY = 'unboard_oauth_state';
+  const CLIENT_ID_KEY = 'unboard_client_id';
+  const REDIRECT_URI_KEY = 'unboard_redirect_uri';
   const ACTIVE_REDIRECT_KEY = 'unboard_active_redirect_uri';
 
-  // Clean up any legacy manual config keys from older versions
-  try {
-    localStorage.removeItem('unboard_client_id');
-    localStorage.removeItem('unboard_redirect_uri');
-  } catch {
-    // ignore storage errors
+  function getClientId() {
+    return (localStorage.getItem(CLIENT_ID_KEY) || '').trim();
+  }
+
+  function setClientId(id) {
+    if (id && id.trim()) {
+      localStorage.setItem(CLIENT_ID_KEY, id.trim());
+    } else {
+      localStorage.removeItem(CLIENT_ID_KEY);
+    }
+  }
+
+  function getDefaultRedirectUri() {
+    const cleanPath = window.location.pathname.replace(/index\.html$/i, '');
+    return window.location.origin + (cleanPath.endsWith('/') ? cleanPath : cleanPath + '/');
   }
 
   function getRedirectUri() {
-    const cleanPath = window.location.pathname.replace(/index\.html$/i, '');
-    return window.location.origin + (cleanPath.endsWith('/') ? cleanPath : cleanPath + '/');
+    const saved = localStorage.getItem(REDIRECT_URI_KEY);
+    if (saved && saved.trim()) return saved.trim();
+    return getDefaultRedirectUri();
+  }
+
+  function setRedirectUri(uri) {
+    if (uri && uri.trim()) {
+      localStorage.setItem(REDIRECT_URI_KEY, uri.trim());
+    } else {
+      localStorage.removeItem(REDIRECT_URI_KEY);
+    }
   }
 
   // ---- Ephemeral storage helpers (sessionStorage with localStorage fallback) ----
@@ -83,6 +100,11 @@ const SpotifyAuth = (() => {
 
   // ---- Auth Flow ----
   async function login() {
+    const clientId = getClientId();
+    if (!clientId) {
+      throw new Error(I18n.t('errConfigureClientId'));
+    }
+
     const codeVerifier = generateRandomString(64);
     const state = generateRandomString(24);
     const redirectUri = getRedirectUri();
@@ -95,7 +117,7 @@ const SpotifyAuth = (() => {
     const codeChallenge = base64urlencode(hashed);
 
     const params = new URLSearchParams({
-      client_id: CLIENT_ID,
+      client_id: clientId,
       response_type: 'code',
       redirect_uri: redirectUri,
       scope: SCOPES,
@@ -125,15 +147,15 @@ const SpotifyAuth = (() => {
 
     const codeVerifier = getTemp(VERIFIER_KEY);
     const expectedState = getTemp(STATE_KEY);
+    const clientId = getClientId();
     const redirectUri = getTemp(ACTIVE_REDIRECT_KEY) || getRedirectUri();
 
-    // Immediately remove sensitive single-use OAuth params from the address bar and storage
     clearUrlParams();
     removeTemp(VERIFIER_KEY);
     removeTemp(STATE_KEY);
     removeTemp(ACTIVE_REDIRECT_KEY);
 
-    if (!codeVerifier || (expectedState && returnedState !== expectedState)) {
+    if (!codeVerifier || !clientId || (expectedState && returnedState !== expectedState)) {
       throw new Error(I18n.t('errMissingAuthData'));
     }
 
@@ -141,7 +163,7 @@ const SpotifyAuth = (() => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        client_id: CLIENT_ID,
+        client_id: clientId,
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: redirectUri,
@@ -168,7 +190,8 @@ const SpotifyAuth = (() => {
 
   async function refreshToken() {
     const tokenData = getTokenData();
-    if (!tokenData?.refresh_token) {
+    const clientId = getClientId();
+    if (!tokenData?.refresh_token || !clientId) {
       logout();
       return false;
     }
@@ -178,7 +201,7 @@ const SpotifyAuth = (() => {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          client_id: CLIENT_ID,
+          client_id: clientId,
           grant_type: 'refresh_token',
           refresh_token: tokenData.refresh_token,
         }),
@@ -239,6 +262,10 @@ const SpotifyAuth = (() => {
   }
 
   return {
+    getClientId,
+    setClientId,
+    getRedirectUri,
+    setRedirectUri,
     login,
     handleCallback,
     refreshToken,

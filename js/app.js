@@ -23,6 +23,11 @@
   const els = {
     // Login
     loginBtn: document.getElementById('login-btn'),
+    configToggle: document.getElementById('config-toggle'),
+    configPanel: document.getElementById('config-panel'),
+    clientIdInput: document.getElementById('client-id'),
+    redirectUriInput: document.getElementById('redirect-uri-input'),
+    saveConfigBtn: document.getElementById('save-config-btn'),
 
     // Playlists
     playlistsGrid: document.getElementById('playlists-grid'),
@@ -128,6 +133,15 @@
   async function init() {
     I18n.applyDOM();
 
+    if (els.redirectUriInput) {
+      els.redirectUriInput.value = SpotifyAuth.getRedirectUri();
+    }
+
+    const savedId = SpotifyAuth.getClientId();
+    if (savedId && els.clientIdInput) {
+      els.clientIdInput.value = savedId;
+    }
+
     try {
       const isCallback = await SpotifyAuth.handleCallback();
       if (isCallback) {
@@ -150,10 +164,42 @@
   function bindEvents() {
     els.loginBtn.addEventListener('click', async () => {
       try {
+        // Auto-save Client ID if user pasted it in the field without clicking Save first
+        if (els.clientIdInput && els.clientIdInput.value.trim()) {
+          SpotifyAuth.setClientId(els.clientIdInput.value.trim());
+        }
+        if (els.redirectUriInput && els.redirectUriInput.value.trim()) {
+          SpotifyAuth.setRedirectUri(els.redirectUriInput.value.trim());
+        }
+        if (!SpotifyAuth.getClientId() && els.configPanel && !els.configPanel.classList.contains('show')) {
+          els.configToggle.classList.add('open');
+          els.configPanel.classList.add('show');
+          els.clientIdInput.focus();
+        }
         await SpotifyAuth.login();
       } catch (err) {
         toast(err.message, 'error');
       }
+    });
+
+    els.configToggle.addEventListener('click', () => {
+      els.configToggle.classList.toggle('open');
+      els.configPanel.classList.toggle('show');
+    });
+
+    els.saveConfigBtn.addEventListener('click', () => {
+      const id = els.clientIdInput.value.trim();
+      const redirectUri = els.redirectUriInput ? els.redirectUriInput.value.trim() : '';
+
+      if (!id) {
+        toast(I18n.t('toastInvalidClientId'), 'error');
+        return;
+      }
+      SpotifyAuth.setClientId(id);
+      if (redirectUri) {
+        SpotifyAuth.setRedirectUri(redirectUri);
+      }
+      toast(I18n.t('toastConfigSaved'), 'success');
     });
 
     els.playlistSearch.addEventListener('input', () => {

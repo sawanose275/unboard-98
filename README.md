@@ -34,10 +34,20 @@ Automatically detects your browser language (defaults to English) with instant s
 
 **Live URL:** [https://sawanose275.github.io/unboard-98/](https://sawanose275.github.io/unboard-98/)
 
+### 1. Create Your Spotify App (1 minute)
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and click **Create App**
+2. Under **Redirect URIs**, add the site's exact URL:
+   - **Live site:** `https://sawanose275.github.io/unboard-98/`
+   - **Local testing:** `http://127.0.0.1:5500/`
+3. Under **APIs used**, check **Web API**
+4. Save and copy your **Client ID**
+
+### 2. Organize Your Playlists
 1. Open **UnBoard 98**
-2. Click **Log in with Spotify** and authorize access
-3. Select any playlist created by you (or collaborative)
-4. Pick a shuffle/sort mode, preview the new track order, and click **Save to Spotify**
+2. Click **Configure Client ID**, paste your Client ID, and click **Save**
+3. Click **Log in with Spotify** and authorize access
+4. Select any playlist created by you (or collaborative)
+5. Pick a shuffle/sort mode, preview the new track order, and click **Save to Spotify**
 
 ### Running Locally
 ```bash
