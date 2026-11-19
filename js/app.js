@@ -1,5 +1,5 @@
 /**
- * UnBoard App — Main application logic
+ * UnBoard 98 App — Main application logic
  */
 (async function () {
   'use strict';
@@ -23,11 +23,6 @@
   const els = {
     // Login
     loginBtn: document.getElementById('login-btn'),
-    configToggle: document.getElementById('config-toggle'),
-    configPanel: document.getElementById('config-panel'),
-    clientIdInput: document.getElementById('client-id'),
-    redirectUriInput: document.getElementById('redirect-uri-input'),
-    saveConfigBtn: document.getElementById('save-config-btn'),
 
     // Playlists
     playlistsGrid: document.getElementById('playlists-grid'),
@@ -133,15 +128,6 @@
   async function init() {
     I18n.applyDOM();
 
-    if (els.redirectUriInput) {
-      els.redirectUriInput.value = SpotifyAuth.getRedirectUri();
-    }
-
-    const savedId = SpotifyAuth.getClientId();
-    if (savedId) {
-      els.clientIdInput.value = savedId;
-    }
-
     try {
       const isCallback = await SpotifyAuth.handleCallback();
       if (isCallback) {
@@ -168,26 +154,6 @@
       } catch (err) {
         toast(err.message, 'error');
       }
-    });
-
-    els.configToggle.addEventListener('click', () => {
-      els.configToggle.classList.toggle('open');
-      els.configPanel.classList.toggle('show');
-    });
-
-    els.saveConfigBtn.addEventListener('click', () => {
-      const id = els.clientIdInput.value.trim();
-      const redirectUri = els.redirectUriInput ? els.redirectUriInput.value.trim() : '';
-
-      if (!id) {
-        toast(I18n.t('toastInvalidClientId'), 'error');
-        return;
-      }
-      SpotifyAuth.setClientId(id);
-      if (redirectUri) {
-        SpotifyAuth.setRedirectUri(redirectUri);
-      }
-      toast(I18n.t('toastConfigSaved'), 'success');
     });
 
     els.playlistSearch.addEventListener('input', () => {
@@ -234,8 +200,9 @@
     });
 
     els.applyBtn.addEventListener('click', async () => {
-      if (!currentPlaylist || currentTracks.length === 0) return;
+      if (!currentPlaylist || currentTracks.length === 0 || els.applyBtn.disabled) return;
 
+      els.applyBtn.disabled = true;
       try {
         showProgressModal(I18n.t('savingToSpotify'), I18n.t('preparing'));
 
@@ -252,11 +219,16 @@
         els.undoBtn.style.display = 'none';
       } catch (err) {
         hideProgressModal();
-        toast(I18n.t('toastSaveError', { msg: err.message }), 'error');
+        if (err.status === 403 || (err.message && err.message.includes('Forbidden'))) {
+          toast(I18n.t('forbiddenToast'), 'error');
+        } else {
+          toast(I18n.t('toastSaveError', { msg: err.message }), 'error');
+        }
+      } finally {
+        els.applyBtn.disabled = false;
       }
     });
 
-    // Re-render dynamic localized views when language changes
     window.addEventListener('unboard:langchange', () => {
       if (allPlaylists.length) {
         filterPlaylists(els.playlistSearch.value.toLowerCase().trim());
@@ -291,9 +263,9 @@
 
       const avatarUrl = currentUser.images?.[0]?.url || '';
       els.userAvatar.src = avatarUrl;
-      els.userName.textContent = currentUser.display_name;
+      els.userName.textContent = currentUser.display_name || '';
       els.userAvatar2.src = avatarUrl;
-      els.userName2.textContent = currentUser.display_name;
+      els.userName2.textContent = currentUser.display_name || '';
 
       allPlaylists = await SpotifyAPI.getAllMyPlaylists();
       renderPlaylists(allPlaylists);
@@ -314,14 +286,14 @@
   function renderPlaylists(playlists) {
     els.playlistsGrid.innerHTML = playlists.map(pl => {
       const img = pl.images?.[0]?.url || '';
-      const count = pl.tracks?.total || 0;
+      const count = pl.tracks?.total ?? pl.items?.total ?? 0;
       const isMine = !currentUser || !pl.owner || pl.owner.id === currentUser.id;
       const ownerLabel = isMine
         ? ''
         : ` • ${I18n.t('byOwner', { owner: escapeHtml(pl.owner?.display_name || I18n.t('otherOwner')) })}`;
       return `
-        <div class="playlist-card" data-id="${pl.id}">
-          <img class="playlist-card-cover" src="${img}" alt="${escapeHtml(pl.name)}" loading="lazy"
+        <div class="playlist-card" data-id="${escapeHtml(pl.id)}">
+          <img class="playlist-card-cover" src="${escapeHtml(img)}" alt="${escapeHtml(pl.name)}" loading="lazy"
                onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%23333%22 width=%221%22 height=%221%22/></svg>'" />
           <div class="playlist-card-name" title="${escapeHtml(pl.name)}">${escapeHtml(pl.name)}</div>
           <div class="playlist-card-info">${formatTrackCount(count)}${ownerLabel}</div>
@@ -344,7 +316,7 @@
       return;
     }
     const filtered = allPlaylists.filter(pl =>
-      pl.name.toLowerCase().includes(query)
+      (pl.name || '').toLowerCase().includes(query)
     );
     renderPlaylists(filtered);
   }
@@ -385,7 +357,7 @@
       renderTracks(currentTracks);
     } catch (err) {
       els.tracksLoading.classList.remove('show');
-      if (err.message && (err.message.includes('Forbidden') || err.message.includes('403'))) {
+      if (err.status === 403 || (err.message && (err.message.includes('Forbidden') || err.message.includes('403')))) {
         els.playlistStats.textContent = I18n.t('forbiddenStats');
         toast(I18n.t('forbiddenToast'), 'error');
       } else {
@@ -425,7 +397,7 @@
       row.innerHTML = `
         <span class="track-num">${i + 1}</span>
         <div class="track-title-col">
-          <img class="track-thumb" src="${track.album.image}" alt="" loading="lazy"
+          <img class="track-thumb" src="${escapeHtml(track.album.image)}" alt="" loading="lazy"
                onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%23333%22 width=%221%22 height=%221%22/></svg>'" />
           <div class="track-info">
             <div class="track-name" title="${escapeHtml(track.name)}">${escapeHtml(track.name)}</div>

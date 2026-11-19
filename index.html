@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.scdn.co https://*.spotifycdn.com; connect-src 'self' https://accounts.spotify.com https://api.spotify.com; base-uri 'self'; form-action 'none';">
   <meta name="description" content="UnBoard 98 — Organize and shuffle your Spotify playlists of any size with a modernized Windows 98 aesthetic.">
   <title>UnBoard 98 — Organize your Spotify Playlists</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +42,6 @@
 
       <div class="menu-bar">
         <span class="menu-item" data-menu="about" data-i18n-html="menuAbout"><u>A</u>bout</span>
-        <span class="menu-item" data-menu="config" data-i18n-html="menuConfig"><u>C</u>onfig</span>
         <span class="menu-item" data-menu="help" data-i18n-html="menuHelp"><u>H</u>elp</span>
       </div>
 
@@ -60,32 +61,6 @@
             </ul>
           </div>
         </div>
-
-        <button class="btn98 btn-block" id="config-toggle">
-          <span class="btn-label">
-            <svg class="ui-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
-              <circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1" stroke-linecap="round"/>
-            </svg>
-            <span data-i18n="configToggle">Configure Client ID</span>
-          </span>
-          <span class="chevron">▾</span>
-        </button>
-
-        <fieldset class="group-box config-panel" id="config-panel">
-          <legend data-i18n="configLegend">Spotify Configuration</legend>
-          <label for="client-id" data-i18n="clientIdLabel">Client ID:</label>
-          <input class="field98" type="text" id="client-id" data-i18n-placeholder="clientIdPlaceholder" placeholder="Paste your Client ID here..." />
-          <label for="redirect-uri-input" data-i18n="redirectUriLabel">Redirect URI (must match Dashboard):</label>
-          <input class="field98" type="text" id="redirect-uri-input" placeholder="https://your-username.github.io/unboard-98/" />
-          <p class="help-text" data-i18n-html="configHelpHtml">
-            Create an app at
-            <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>
-            and register the exact Redirect URI above.
-          </p>
-          <div class="btn-row right">
-            <button class="btn98" id="save-config-btn" data-i18n="saveBtn">Save</button>
-          </div>
-        </fieldset>
 
         <div class="btn-row">
           <button class="btn98 btn-default btn-spotify" id="login-btn">
@@ -308,7 +283,6 @@
     <ul class="start-menu-items">
       <li data-start="playlists"><span class="sm-icon">📁</span><span data-i18n="startPlaylists">My Playlists</span></li>
       <li data-start="language"><span class="sm-icon">🌐</span><span data-i18n="startLanguage">Language</span></li>
-      <li data-start="config"><span class="sm-icon">⚙️</span><span data-i18n="startConfig">Configure Client ID</span></li>
       <li data-start="about"><span class="sm-icon">💿</span><span data-i18n="startAbout">About UnBoard 98</span></li>
       <li data-start="help"><span class="sm-icon">❓</span><span data-i18n="startHelp">Help</span></li>
       <li class="sm-sep"></li>

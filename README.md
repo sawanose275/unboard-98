@@ -30,30 +30,20 @@ Automatically detects your browser language (defaults to English) with instant s
 
 ---
 
-## 🚀 Setup & Usage
+## 🚀 Live Site & Usage
 
-### 1. Create a Spotify App
-1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Click **Create App**
-3. Under **Redirect URIs**, add your site's exact URL:
-   - **GitHub Pages:** `https://<your-username>.github.io/<repo-name>/`
-   - **Local testing:** `http://127.0.0.1:5500/`
-4. Under **APIs used**, check **Web API**
-5. Save and copy your **Client ID**
+**Live URL:** [https://sawanose275.github.io/unboard-98/](https://sawanose275.github.io/unboard-98/)
 
-### 2. Run Locally
+1. Open **UnBoard 98**
+2. Click **Log in with Spotify** and authorize access
+3. Select any playlist created by you (or collaborative)
+4. Pick a shuffle/sort mode, preview the new track order, and click **Save to Spotify**
+
+### Running Locally
 ```bash
 python3 -m http.server 5500 --bind 127.0.0.1
 ```
-Then open `http://127.0.0.1:5500/` in your browser, click **Configure Client ID**, paste your Client ID, save, and click **Log in with Spotify**.
-
-### 3. Deploy on GitHub Pages (Free + HTTPS)
-1. Push this repository to GitHub
-2. Go to **Settings → Pages**
-3. Under **Build and deployment → Source**, select **Deploy from a branch**
-4. Choose `main` and `/ (root)`, then click **Save**
-5. Wait ~1 minute for your live HTTPS URL (`https://<your-username>.github.io/<repo-name>/`)
-6. Add that exact URL as a **Redirect URI** in your Spotify Developer Dashboard
+Open `http://127.0.0.1:5500/` in your browser.
 
 ---
 

@@ -4,7 +4,7 @@
 const SpotifyAPI = (() => {
   const BASE_URL = 'https://api.spotify.com/v1';
 
-  async function request(endpoint, options = {}) {
+  async function request(endpoint, options = {}, retried = false) {
     const token = await SpotifyAuth.getAccessToken();
     if (!token) {
       const err = new Error(I18n.t('errNotAuthenticated'));
@@ -24,21 +24,27 @@ const SpotifyAPI = (() => {
     });
 
     if (response.status === 401) {
+      if (!retried && await SpotifyAuth.refreshToken()) {
+        return request(endpoint, options, true);
+      }
       SpotifyAuth.logout();
       const err = new Error(I18n.t('errSessionExpired'));
       err.code = 'AUTH_EXPIRED';
+      err.status = 401;
       throw err;
     }
 
     if (response.status === 429) {
-      const retryAfter = parseInt(response.headers.get('Retry-After') || '1', 10);
+      const retryAfter = Math.min(parseInt(response.headers.get('Retry-After') || '1', 10), 10);
       await new Promise(r => setTimeout(r, retryAfter * 1000));
-      return request(endpoint, options);
+      return request(endpoint, options, retried);
     }
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || I18n.t('errHttp', { status: response.status }));
+      const errData = await response.json().catch(() => ({}));
+      const err = new Error(errData.error?.message || I18n.t('errHttp', { status: response.status }));
+      err.status = response.status;
+      throw err;
     }
 
     if (response.status === 204) return null;
@@ -46,7 +52,7 @@ const SpotifyAPI = (() => {
     return response.json();
   }
 
-  // ---- Usuário ----
+  // ---- User ----
   async function getMe() {
     return request('/me');
   }
@@ -63,21 +69,22 @@ const SpotifyAPI = (() => {
 
     while (true) {
       const data = await getMyPlaylists(limit, offset);
-      playlists.push(...data.items);
-      if (!data.next) break;
+      if (Array.isArray(data?.items)) {
+        playlists.push(...data.items.filter(Boolean));
+      }
+      if (!data?.next) break;
       offset += limit;
     }
 
     return playlists;
   }
 
-  // ---- Tracks/Items da Playlist ----
+  // ---- Playlist Tracks/Items ----
   async function getPlaylistItems(playlistId, limit = 100, offset = 0) {
-    // Tenta o endpoint moderno /items primeiro, com fallback para o antigo /tracks
     try {
       return await request(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}`);
     } catch (err) {
-      if (err.message && (err.message.includes('404') || err.message.includes('Forbidden') || err.message.includes('403'))) {
+      if (err.status === 404 || err.status === 403) {
         return await request(`/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}`);
       }
       throw err;
@@ -92,13 +99,12 @@ const SpotifyAPI = (() => {
 
     while (true) {
       const data = await getPlaylistItems(playlistId, limit, offset);
-      if (total === 0) total = data.total || 0;
+      if (total === 0) total = data?.total || 0;
 
-      if (!data.items || data.items.length === 0) break;
+      if (!data?.items || data.items.length === 0) break;
 
-      // Filtra local files e tracks nulas (suporta tanto item.track quanto item.item)
       const validItems = data.items.filter(item => {
-        const t = item.track || item.item;
+        const t = item?.track || item?.item;
         return t && t.uri && !t.uri.startsWith('spotify:local');
       });
 
@@ -109,7 +115,7 @@ const SpotifyAPI = (() => {
           addedAt: item.added_at,
           uri: t.uri,
           id: t.id,
-          name: t.name,
+          name: t.name || '',
           duration: t.duration_ms || 0,
           popularity: t.popularity || 0,
           album: {
@@ -135,26 +141,23 @@ const SpotifyAPI = (() => {
     return tracks;
   }
 
-  // ---- Reordenar Playlist ----
+  // ---- Reorder Playlist ----
   async function reorderPlaylist(playlistId, uris, onProgress) {
     const chunkSize = 100;
     const totalChunks = Math.ceil(uris.length / chunkSize);
 
-    // Determina se usamos /items ou /tracks
     let endpointPath = `/playlists/${playlistId}/items`;
 
     for (let i = 0; i < totalChunks; i++) {
       const chunk = uris.slice(i * chunkSize, (i + 1) * chunkSize);
 
       if (i === 0) {
-        // PUT substitui todas as tracks
         try {
           await request(endpointPath, {
             method: 'PUT',
             body: JSON.stringify({ uris: chunk }),
           });
-        } catch (err) {
-          // Se falhou no /items, tenta /tracks
+        } catch {
           endpointPath = `/playlists/${playlistId}/tracks`;
           await request(endpointPath, {
             method: 'PUT',
@@ -162,7 +165,6 @@ const SpotifyAPI = (() => {
           });
         }
       } else {
-        // POST adiciona ao final
         await request(endpointPath, {
           method: 'POST',
           body: JSON.stringify({ uris: chunk }),
