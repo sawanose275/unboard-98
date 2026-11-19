@@ -328,10 +328,20 @@
     }
   }
 
+  const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="#8d94a8" width="1" height="1"/></svg>');
+
+  function bindImageFallback(container) {
+    container.querySelectorAll('img').forEach(img => {
+      img.addEventListener('error', () => {
+        if (img.src !== FALLBACK_IMG) img.src = FALLBACK_IMG;
+      }, { once: true });
+    });
+  }
+
   // ---- Render Playlists ----
   function renderPlaylists(playlists) {
     els.playlistsGrid.innerHTML = playlists.map(pl => {
-      const img = pl.images?.[0]?.url || '';
+      const img = pl.images?.[0]?.url || FALLBACK_IMG;
       const count = pl.tracks?.total ?? pl.items?.total ?? 0;
       const isMine = !currentUser || !pl.owner || pl.owner.id === currentUser.id;
       const ownerLabel = isMine
@@ -339,13 +349,14 @@
         : ` • ${I18n.t('byOwner', { owner: escapeHtml(pl.owner?.display_name || I18n.t('otherOwner')) })}`;
       return `
         <div class="playlist-card" data-id="${escapeHtml(pl.id)}">
-          <img class="playlist-card-cover" src="${escapeHtml(img)}" alt="${escapeHtml(pl.name)}" loading="lazy"
-               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%23333%22 width=%221%22 height=%221%22/></svg>'" />
+          <img class="playlist-card-cover" src="${escapeHtml(img)}" alt="${escapeHtml(pl.name)}" loading="lazy" />
           <div class="playlist-card-name" title="${escapeHtml(pl.name)}">${escapeHtml(pl.name)}</div>
           <div class="playlist-card-info">${formatTrackCount(count)}${ownerLabel}</div>
         </div>
       `;
     }).join('');
+
+    bindImageFallback(els.playlistsGrid);
 
     els.playlistsGrid.querySelectorAll('.playlist-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -443,8 +454,7 @@
       row.innerHTML = `
         <span class="track-num">${i + 1}</span>
         <div class="track-title-col">
-          <img class="track-thumb" src="${escapeHtml(track.album.image)}" alt="" loading="lazy"
-               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%23333%22 width=%221%22 height=%221%22/></svg>'" />
+          <img class="track-thumb" src="${escapeHtml(track.album.image || FALLBACK_IMG)}" alt="" loading="lazy" />
           <div class="track-info">
             <div class="track-name" title="${escapeHtml(track.name)}">${escapeHtml(track.name)}</div>
             <div class="track-artist">${escapeHtml(track.artistName)}</div>
@@ -460,6 +470,7 @@
 
     els.tracksList.innerHTML = '';
     els.tracksList.appendChild(fragment);
+    bindImageFallback(els.tracksList);
   }
 
   function escapeHtml(str) {
