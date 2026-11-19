@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💿</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="icons/unboard-disc.svg">
 </head>
 <body>
 
@@ -37,14 +37,11 @@
   </div>
 
   <!-- ====== WINDOW: LOGIN ====== -->
-  <section id="login-screen" class="screen active" data-title="UnBoard 98" data-icon="💿">
+  <section id="login-screen" class="screen active" data-title="UnBoard 98">
     <div class="window window-small" data-window>
       <div class="title-bar" data-drag>
         <div class="title-bar-text">
-          <svg class="title-svg" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="6.5" fill="#1DB954" stroke="#ffffff" stroke-width="1"/>
-            <path d="M5 6.8c2-.5 4.2-.4 6 .6M5.5 9c1.6-.4 3.4-.3 4.8.5M6 11c1.2-.3 2.5-.2 3.6.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
+          <img class="ico ico-16" src="icons/unboard-disc.svg" alt="" />
           <span>UnBoard 98</span>
         </div>
         <div class="title-bar-controls">
@@ -78,9 +75,7 @@
 
         <button class="btn98 btn-block" id="config-toggle">
           <span class="btn-label">
-            <svg class="ui-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
-              <circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1" stroke-linecap="round"/>
-            </svg>
+            <img class="ico ico-15" src="icons/gear.svg" alt="" />
             <span data-i18n="configToggle">Configure Client ID</span>
           </span>
           <span class="chevron">▾</span>
@@ -104,9 +99,7 @@
 
         <div class="btn-row">
           <button class="btn98 btn-default btn-spotify" id="login-btn">
-            <svg class="ui-svg spotify-dot" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.67 11.54a.5.5 0 0 1-.69.16c-1.88-1.15-4.24-1.41-7.03-.77a.5.5 0 1 1-.22-.97c3.05-.7 5.67-.4 7.77.89a.5.5 0 0 1 .17.69zm.98-2.18a.62.62 0 0 1-.86.2c-2.15-1.32-5.43-1.71-7.98-.93a.62.62 0 1 1-.36-1.19c2.91-.88 6.52-.45 8.99 1.07a.62.62 0 0 1 .21.85zm.08-2.27C10.16 5.56 5.91 5.42 3.45 6.17a.75.75 0 1 1-.43-1.43c2.82-.86 7.51-.69 10.48 1.07a.75.75 0 0 1-.77 1.28z"/>
-            </svg>
+            <img class="ico ico-16" src="icons/spotify.svg" alt="" />
             <span data-i18n="loginBtn">Log in with Spotify</span>
           </button>
         </div>
@@ -120,13 +113,11 @@
   </section>
 
   <!-- ====== WINDOW: PLAYLISTS ====== -->
-  <section id="playlists-screen" class="screen" data-title="Your Playlists" data-icon="📁">
+  <section id="playlists-screen" class="screen" data-title="Your Playlists">
     <div class="window window-medium" data-window>
       <div class="title-bar" data-drag>
         <div class="title-bar-text">
-          <svg class="title-svg" viewBox="0 0 16 16" fill="none">
-            <path d="M1.5 3.5h4.5l1.4 1.5h7.1v8h-13v-9.5z" fill="#f5c953" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>
-          </svg>
+          <img class="ico ico-16" src="icons/folder.svg" alt="" />
           <span data-i18n="playlistsWinTitle">Your Playlists — UnBoard 98</span>
         </div>
         <div class="title-bar-controls">
@@ -144,16 +135,17 @@
       <div class="toolbar">
         <label class="toolbar-label" for="playlist-search" data-i18n="searchLabel">Search:</label>
         <div class="search-field">
-          <svg class="ui-svg muted" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14" stroke-linecap="round"/>
-          </svg>
+          <img class="ico ico-14" src="icons/search.svg" alt="" />
           <input type="text" id="playlist-search" data-i18n-placeholder="searchPlaceholder" placeholder="Filter playlists..." />
         </div>
         <div class="user-info">
           <img id="user-avatar" src="" alt="" />
           <span id="user-name"></span>
         </div>
-        <button class="btn98" id="logout-btn" data-i18n="logoutBtn" data-i18n-title="logoutBtn" title="Log out">Log out</button>
+        <button class="btn98" id="logout-btn" data-i18n-title="logoutBtn" title="Log out">
+          <img class="ico ico-14" src="icons/power.svg" alt="" />
+          <span data-i18n="logoutBtn">Log out</span>
+        </button>
       </div>
 
       <div class="window-body no-pad">
@@ -174,14 +166,11 @@
   </section>
 
   <!-- ====== WINDOW: ORGANIZER ====== -->
-  <section id="organizer-screen" class="screen" data-title="Organizer" data-icon="🎵">
+  <section id="organizer-screen" class="screen" data-title="Organizer">
     <div class="window window-large" data-window>
       <div class="title-bar" data-drag>
         <div class="title-bar-text">
-          <svg class="title-svg" viewBox="0 0 16 16" fill="none">
-            <path d="M6 12V3.5l7-1.5v8.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="4.5" cy="12" r="2" fill="#fff"/><circle cx="11.5" cy="10.5" r="2" fill="#fff"/>
-          </svg>
+          <img class="ico ico-16" src="icons/music-note.svg" alt="" />
           <span id="organizer-window-title" data-i18n="organizerWinTitle">Organizer — UnBoard 98</span>
         </div>
         <div class="title-bar-controls">
@@ -202,7 +191,10 @@
         <div class="action-bar" id="action-bar" style="display:none;">
           <span class="action-sort-label" id="current-sort-label" data-i18n="noSortApplied">No sort applied</span>
           <button class="btn98" id="undo-btn" style="display:none;" data-i18n="undoBtn">↶ Undo</button>
-          <button class="btn98 btn-default btn-spotify" id="apply-btn" data-i18n="saveSpotifyBtn">Save to Spotify</button>
+          <button class="btn98 btn-default btn-spotify" id="apply-btn">
+            <img class="ico ico-14" src="icons/save-disc.svg" alt="" />
+            <span data-i18n="saveSpotifyBtn">Save to Spotify</span>
+          </button>
         </div>
         <div class="user-info push-right">
           <img id="user-avatar-2" src="" alt="" />
@@ -224,7 +216,7 @@
 
           <div class="sort-groups">
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupRandom">Shuffle</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/shuffle.svg" alt="" /><span data-i18n="sortGroupRandom">Shuffle</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="random" data-i18n="sortTotal" data-i18n-title="sortRandomTip" title="Shuffle all tracks randomly">Full Shuffle</button>
                 <button class="btn98 sort-btn" data-sort="random-album" data-i18n="sortRandomAlbum" data-i18n-title="sortRandomAlbumTip" title="Shuffle album order while keeping album tracks grouped">By Album</button>
@@ -234,7 +226,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupName">Track Name</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/sort-alpha.svg" alt="" /><span data-i18n="sortGroupName">Track Name</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="name-asc">A → Z</button>
                 <button class="btn98 sort-btn" data-sort="name-desc">Z → A</button>
@@ -242,7 +234,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupArtist">Artist</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/artist.svg" alt="" /><span data-i18n="sortGroupArtist">Artist</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="artist-asc">A → Z</button>
                 <button class="btn98 sort-btn" data-sort="artist-desc">Z → A</button>
@@ -250,7 +242,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupAlbum">Album</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/album.svg" alt="" /><span data-i18n="sortGroupAlbum">Album</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="album-asc">A → Z</button>
                 <button class="btn98 sort-btn" data-sort="album-desc">Z → A</button>
@@ -258,7 +250,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupRelease">Release Date</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/calendar.svg" alt="" /><span data-i18n="sortGroupRelease">Release Date</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="date-newest" data-i18n="newest">Newest</button>
                 <button class="btn98 sort-btn" data-sort="date-oldest" data-i18n="oldest">Oldest</button>
@@ -266,7 +258,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupDuration">Duration</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/clock.svg" alt="" /><span data-i18n="sortGroupDuration">Duration</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="duration-longest" data-i18n="longest">Longest</button>
                 <button class="btn98 sort-btn" data-sort="duration-shortest" data-i18n="shortest">Shortest</button>
@@ -274,7 +266,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupPopularity">Popularity</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/popularity.svg" alt="" /><span data-i18n="sortGroupPopularity">Popularity</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="popularity-desc" data-i18n="mostPopular">Most Popular</button>
                 <button class="btn98 sort-btn" data-sort="popularity-asc" data-i18n="leastPopular">Least Popular</button>
@@ -282,7 +274,7 @@
             </fieldset>
 
             <fieldset class="group-box sort-group">
-              <legend data-i18n="sortGroupAdded">Date Added</legend>
+              <legend><span class="legend-wrap"><img class="ico ico-13" src="icons/pin.svg" alt="" /><span data-i18n="sortGroupAdded">Date Added</span></span></legend>
               <div class="sort-buttons">
                 <button class="btn98 sort-btn" data-sort="added-newest" data-i18n="newest">Newest</button>
                 <button class="btn98 sort-btn" data-sort="added-oldest" data-i18n="oldest">Oldest</button>
@@ -298,7 +290,7 @@
             <span class="track-title-col" data-i18n="colTitle">Title</span>
             <span class="track-album-col" data-i18n="colAlbum">Album</span>
             <span class="track-date-col" data-i18n="colAdded">Added</span>
-            <span class="track-duration-col">⏱</span>
+            <span class="track-duration-col"><img class="ico ico-13 ico-center" src="icons/clock.svg" alt="" /></span>
           </div>
           <div class="tracks-scroll">
             <div class="tracks-list" id="tracks-list"></div>
@@ -321,12 +313,12 @@
   <div class="start-menu" id="start-menu">
     <div class="start-menu-band"><span>Un<b>Board</b> 98</span></div>
     <ul class="start-menu-items">
-      <li data-start="playlists"><span class="sm-icon">📁</span><span data-i18n="startPlaylists">My Playlists</span></li>
-      <li data-start="language"><span class="sm-icon">🌐</span><span data-i18n="startLanguage">Language</span></li>
-      <li data-start="about"><span class="sm-icon">💿</span><span data-i18n="startAbout">About UnBoard 98</span></li>
-      <li data-start="help"><span class="sm-icon">❓</span><span data-i18n="startHelp">Help</span></li>
+      <li data-start="playlists"><img class="sm-ico" src="icons/folder.svg" alt="" /><span data-i18n="startPlaylists">My Playlists</span></li>
+      <li data-start="language"><img class="sm-ico" src="icons/globe.svg" alt="" /><span data-i18n="startLanguage">Language</span></li>
+      <li data-start="about"><img class="sm-ico" src="icons/unboard-disc.svg" alt="" /><span data-i18n="startAbout">About UnBoard 98</span></li>
+      <li data-start="help"><img class="sm-ico" src="icons/help.svg" alt="" /><span data-i18n="startHelp">Help</span></li>
       <li class="sm-sep"></li>
-      <li data-start="logout"><span class="sm-icon">⏻</span><span data-i18n="startLogout">Log out...</span></li>
+      <li data-start="logout"><img class="sm-ico" src="icons/power.svg" alt="" /><span data-i18n="startLogout">Log out...</span></li>
     </ul>
   </div>
 
@@ -336,10 +328,7 @@
   <!-- ====== TASKBAR ====== -->
   <footer class="taskbar">
     <button class="btn98 start-btn" id="start-btn">
-      <svg class="start-svg" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6.5" fill="#1DB954" stroke="#0c5e2a" stroke-width="1"/>
-        <path d="M4.8 6.8c2-.5 4.3-.4 6.2.6M5.4 9c1.6-.4 3.4-.3 5 .5M6 11.1c1.2-.3 2.5-.2 3.7.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
+      <img class="ico ico-16" src="icons/unboard-disc.svg" alt="" />
       <b data-i18n="startBtn">Start</b>
     </button>
     <div class="taskbar-sep"></div>
@@ -359,11 +348,14 @@
   <div id="progress-modal" class="modal" style="display:none;">
     <div class="window dialog">
       <div class="title-bar">
-        <div class="title-bar-text"><span data-i18n="savingTitle">Saving...</span></div>
+        <div class="title-bar-text">
+          <img class="ico ico-14" src="icons/save-disc.svg" alt="" />
+          <span data-i18n="savingTitle">Saving...</span>
+        </div>
       </div>
       <div class="window-body">
         <div class="dialog-row">
-          <span class="dialog-icon">📀</span>
+          <img class="dialog-icon-img" src="icons/save-disc.svg" alt="" />
           <div>
             <strong id="progress-title" data-i18n="savingToSpotify">Saving to Spotify...</strong>
             <p id="progress-text" data-i18n="savingDesc">Reordering playlist tracks</p>
@@ -387,7 +379,7 @@
       </div>
       <div class="window-body">
         <div class="dialog-row">
-          <span class="dialog-icon" id="info-icon">💿</span>
+          <img class="dialog-icon-img" id="info-icon" src="icons/unboard-disc.svg" alt="" />
           <div id="info-text"></div>
         </div>
         <div class="btn-row right">

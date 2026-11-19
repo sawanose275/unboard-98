@@ -32,11 +32,13 @@
 
     langMenu.innerHTML = '';
 
+    const CHECK_HTML = '<img class="ico ico-12 lang-check-img" src="icons/check.svg" alt="" />';
+
     const autoRow = document.createElement('div');
     autoRow.className = 'lang-item';
     autoRow.innerHTML = `
       <span>${I18n.t('langAuto', { lang: I18n.getNativeName(detected) })}</span>
-      <span class="lang-check">${pref === 'auto' ? '✓' : ''}</span>
+      <span class="lang-check">${pref === 'auto' ? CHECK_HTML : ''}</span>
     `;
     autoRow.addEventListener('click', () => {
       I18n.setLang('auto');
@@ -57,7 +59,7 @@
           <span class="lang-code">${l.badge}</span>
           <span>${l.native}</span>
         </span>
-        <span class="lang-check">${isSelected ? '✓' : ''}</span>
+        <span class="lang-check">${isSelected ? CHECK_HTML : ''}</span>
       `;
       row.addEventListener('click', () => {
         I18n.setLang(l.code);
@@ -107,9 +109,9 @@
   }
 
   const TASK_ICONS = {
-    'login-screen': `<svg class="ui-svg" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#1DB954" stroke="#0c5e2a" stroke-width="1"/><path d="M4.8 6.8c2-.5 4.3-.4 6.2.6M5.4 9c1.6-.4 3.4-.3 5 .5M6 11.1c1.2-.3 2.5-.2 3.7.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>`,
-    'playlists-screen': `<svg class="ui-svg" viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5h4.5l1.4 1.5h7.1v8h-13v-9.5z" fill="#f0bf3d" stroke="#8a6510" stroke-width="1" stroke-linejoin="round"/></svg>`,
-    'organizer-screen': `<svg class="ui-svg" viewBox="0 0 16 16" fill="none"><path d="M6 12V3.5l7-1.5v8.5" stroke="#103b8c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4.5" cy="12" r="2" fill="#103b8c"/><circle cx="11.5" cy="10.5" r="2" fill="#103b8c"/></svg>`,
+    'login-screen': 'icons/unboard-disc.svg',
+    'playlists-screen': 'icons/folder.svg',
+    'organizer-screen': 'icons/music-note.svg',
   };
 
   function updateDynamicStatusBars() {
@@ -142,7 +144,8 @@
 
     const btn = document.createElement('button');
     btn.className = 'btn98 task-btn' + (current.classList.contains('minimized') ? '' : ' active');
-    btn.innerHTML = TASK_ICONS[current.id] || `<span>${current.dataset.icon || '🗔'}</span>`;
+    const iconSrc = TASK_ICONS[current.id] || 'icons/window.svg';
+    btn.innerHTML = `<img class="ico ico-15" src="${iconSrc}" alt="" />`;
     const label = document.createElement('span');
     label.textContent = screenTitle(current);
     label.style.overflow = 'hidden';
@@ -247,9 +250,9 @@
   }
 
   // ---------- Info Dialog ----------
-  function showInfo(title, icon, html) {
+  function showInfo(title, iconSrc, html) {
     infoTitle.textContent = title;
-    infoIcon.textContent = icon;
+    infoIcon.src = iconSrc;
     infoText.innerHTML = html;
     infoModal.style.display = 'flex';
     $('#info-ok').focus();
@@ -260,12 +263,12 @@
 
   function handleCommand(cmd) {
     switch (cmd) {
-      case 'about': showInfo(I18n.t('aboutTitle'), '💿', I18n.t('aboutHtml')); break;
-      case 'help': showInfo(I18n.t('helpTitle'), '❓', I18n.t('helpHtml')); break;
+      case 'about': showInfo(I18n.t('aboutTitle'), 'icons/unboard-disc.svg', I18n.t('aboutHtml')); break;
+      case 'help': showInfo(I18n.t('helpTitle'), 'icons/help.svg', I18n.t('helpHtml')); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('startPlaylists'), '📁', I18n.t('loginFirstHtml'));
+          showInfo(I18n.t('startPlaylists'), 'icons/folder.svg', I18n.t('loginFirstHtml'));
         } else if ($('#organizer-screen').classList.contains('active')) {
           $('#back-btn').click();
         } else {
@@ -275,7 +278,7 @@
         break;
       case 'logout':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('logoutBtn'), '⏻', I18n.t('notLoggedInHtml'));
+          showInfo(I18n.t('logoutBtn'), 'icons/power.svg', I18n.t('notLoggedInHtml'));
         } else {
           $('#logout-btn').click();
         }

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="discBg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f2f6ff"/>
+      <stop offset="35%" stop-color="#b8e7d0"/>
+      <stop offset="68%" stop-color="#7bc4fa"/>
+      <stop offset="100%" stop-color="#d8ccf8"/>
+    </linearGradient>
+    <linearGradient id="discCenter" x1="8" y1="8" x2="16" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="12" cy="12" r="10" fill="url(#discBg)" stroke="#1c2030" stroke-width="1.5"/>
+  <path d="M5.5 7.5A8 8 0 0 1 12 4v8L5.5 7.5z" fill="#ffffff" fill-opacity="0.5"/>
+  <path d="M18.5 16.5A8 8 0 0 1 12 20v-8l6.5 4.5z" fill="#103b8c" fill-opacity="0.16"/>
+  <circle cx="12" cy="12" r="4.2" fill="url(#discCenter)" stroke="#1c2030" stroke-width="1.3"/>
+  <circle cx="12" cy="12" r="1.5" fill="#ffffff" stroke="#1c2030" stroke-width="1.1"/>
+</svg>
