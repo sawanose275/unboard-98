@@ -323,6 +323,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .ico-14 { width: 14px; height: 14px; }
 .ico-15 { width: 15px; height: 15px; }
 .ico-16 { width: 16px; height: 16px; }
+.ico-18 { width: 18px; height: 18px; }
 .ico-center { display: block; margin: 0 auto; }
 
 .legend-wrap {
@@ -332,20 +333,18 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 .sm-ico {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .dialog-icon-img {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   object-fit: contain;
 }
-
-.lang-item:hover .lang-check-img { filter: brightness(0) invert(1); }
 
 .btn98 {
   display: inline-flex;
@@ -989,17 +988,17 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .toast::before {
   content: "";
   position: absolute;
-  left: 10px;
-  top: 9px;
-  width: 16px;
-  height: 16px;
-  background: url("../icons/toast-info.svg") center / contain no-repeat;
+  left: 9px;
+  top: 8px;
+  width: 18px;
+  height: 18px;
+  background: url("../icons/info.png") center / contain no-repeat;
 }
 .toast.success::before {
-  background-image: url("../icons/toast-success.svg");
+  background-image: url("../icons/success.png");
 }
 .toast.error::before {
-  background-image: url("../icons/toast-error.svg");
+  background-image: url("../icons/error.png");
 }
 .toast::after {
   content: "";

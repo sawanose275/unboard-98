@@ -32,7 +32,7 @@
 
     langMenu.innerHTML = '';
 
-    const CHECK_HTML = '<img class="ico ico-12 lang-check-img" src="icons/check.svg" alt="" />';
+    const CHECK_HTML = '<img class="ico ico-14" src="icons/success.png" alt="" />';
 
     const autoRow = document.createElement('div');
     autoRow.className = 'lang-item';
@@ -109,9 +109,9 @@
   }
 
   const TASK_ICONS = {
-    'login-screen': 'icons/unboard-disc.svg',
-    'playlists-screen': 'icons/folder.svg',
-    'organizer-screen': 'icons/music-note.svg',
+    'login-screen': 'icons/unboard.png',
+    'playlists-screen': 'icons/playlists.png',
+    'organizer-screen': 'icons/organizer.png',
   };
 
   function updateDynamicStatusBars() {
@@ -144,8 +144,8 @@
 
     const btn = document.createElement('button');
     btn.className = 'btn98 task-btn' + (current.classList.contains('minimized') ? '' : ' active');
-    const iconSrc = TASK_ICONS[current.id] || 'icons/window.svg';
-    btn.innerHTML = `<img class="ico ico-15" src="${iconSrc}" alt="" />`;
+    const iconSrc = TASK_ICONS[current.id] || 'icons/unboard.png';
+    btn.innerHTML = `<img class="ico ico-16" src="${iconSrc}" alt="" />`;
     const label = document.createElement('span');
     label.textContent = screenTitle(current);
     label.style.overflow = 'hidden';
@@ -263,12 +263,12 @@
 
   function handleCommand(cmd) {
     switch (cmd) {
-      case 'about': showInfo(I18n.t('aboutTitle'), 'icons/unboard-disc.svg', I18n.t('aboutHtml')); break;
-      case 'help': showInfo(I18n.t('helpTitle'), 'icons/help.svg', I18n.t('helpHtml')); break;
+      case 'about': showInfo(I18n.t('aboutTitle'), 'icons/unboard.png', I18n.t('aboutHtml')); break;
+      case 'help': showInfo(I18n.t('helpTitle'), 'icons/help.png', I18n.t('helpHtml')); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('startPlaylists'), 'icons/folder.svg', I18n.t('loginFirstHtml'));
+          showInfo(I18n.t('startPlaylists'), 'icons/playlists.png', I18n.t('loginFirstHtml'));
         } else if ($('#organizer-screen').classList.contains('active')) {
           $('#back-btn').click();
         } else {
@@ -278,7 +278,7 @@
         break;
       case 'logout':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('logoutBtn'), 'icons/power.svg', I18n.t('notLoggedInHtml'));
+          showInfo(I18n.t('logoutBtn'), 'icons/error.png', I18n.t('notLoggedInHtml'));
         } else {
           $('#logout-btn').click();
         }

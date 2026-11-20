@@ -134,7 +134,7 @@ unboard-98/
 │   └── desktop.js          # Window dragging, taskbar, Start menu, and language switcher
 ├── gifs/
 │   └── ondas-azuis.gif     # Animated desktop background
-├── icons/                  # Custom SVG icon set (Windows 98 retro-modern style)
+├── icons/                  # Retro Windows Vista / Aero PNG icons
 ├── robots.txt              # Search engine crawl rules
 ├── sitemap.xml             # Sitemap for search indexing
 ├── .nojekyll               # Disables Jekyll processing on GitHub Pages
