@@ -1,7 +1,8 @@
 /**
- * Sorters — Algoritmos de ordenação para a playlist
+ * Sorters — 18 shuffle and sorting algorithms for Spotify playlists
  */
 const Sorters = (() => {
+  'use strict';
 
   // Fisher-Yates shuffle
   function shuffle(arr) {
@@ -13,7 +14,7 @@ const Sorters = (() => {
     return a;
   }
 
-  // Comparador normalizado (remove acentos para comparação)
+  // Accent-insensitive lowercase normalization for sorting and grouping
   function normalize(str) {
     return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
@@ -24,142 +25,155 @@ const Sorters = (() => {
 
   function parseDateToNumber(dateStr) {
     if (!dateStr) return 0;
-    // Pode ser "2023", "2023-05", ou "2023-05-15"
-    return new Date(dateStr.length === 4 ? `${dateStr}-01-01` : dateStr.length === 7 ? `${dateStr}-01` : dateStr).getTime() || 0;
+    // Handles "YYYY", "YYYY-MM", or "YYYY-MM-DD"
+    const iso = dateStr.length === 4 ? `${dateStr}-01-01`
+      : dateStr.length === 7 ? `${dateStr}-01`
+      : dateStr;
+    const ms = Date.parse(iso);
+    return Number.isFinite(ms) ? ms : 0;
   }
 
-  // ============= ALGORITMOS =============
-
-  /** Aleatório total */
-  function random(tracks) {
-    return shuffle(tracks);
+  function parseTimestamp(dateStr) {
+    if (!dateStr) return 0;
+    const ms = Date.parse(dateStr);
+    return Number.isFinite(ms) ? ms : 0;
   }
 
-  /** Aleatório por álbum: agrupa por álbum, embaralha a ordem dos álbuns, mantém a ordem das faixas no álbum */
-  function randomByAlbum(tracks) {
-    const groups = groupBy(tracks, t => t.album.id);
-    const shuffledKeys = shuffle(Object.keys(groups));
-    return shuffledKeys.flatMap(key => groups[key]);
-  }
-
-  /** Aleatório por artista: agrupa por artista principal, embaralha a ordem dos artistas */
-  function randomByArtist(tracks) {
-    const groups = groupBy(tracks, t => t.artists[0]?.id || 'unknown');
-    const shuffledKeys = shuffle(Object.keys(groups));
-    return shuffledKeys.flatMap(key => groups[key]);
-  }
-
-  /** Aleatório por nome: agrupa pela letra inicial, embaralha a ordem dos grupos, e embaralha dentro de cada grupo */
-  function randomByName(tracks) {
-    const groups = groupBy(tracks, t => {
-      const first = normalize(t.name).charAt(0);
-      return /[a-z]/.test(first) ? first : '#';
-    });
-    const shuffledKeys = shuffle(Object.keys(groups));
-    return shuffledKeys.flatMap(key => shuffle(groups[key]));
-  }
-
-  /** Por nome A-Z */
-  function nameAsc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(a.name, b.name));
-  }
-
-  /** Por nome Z-A */
-  function nameDesc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(b.name, a.name));
-  }
-
-  /** Por artista A-Z */
-  function artistAsc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(a.artistName, b.artistName));
-  }
-
-  /** Por artista Z-A */
-  function artistDesc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(b.artistName, a.artistName));
-  }
-
-  /** Por álbum A-Z */
-  function albumAsc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(a.album.name, b.album.name));
-  }
-
-  /** Por álbum Z-A */
-  function albumDesc(tracks) {
-    return [...tracks].sort((a, b) => compareStrings(b.album.name, a.album.name));
-  }
-
-  /** Por data de lançamento — mais recente primeiro */
-  function dateNewest(tracks) {
-    return [...tracks].sort((a, b) => parseDateToNumber(b.album.releaseDate) - parseDateToNumber(a.album.releaseDate));
-  }
-
-  /** Por data de lançamento — mais antigo primeiro */
-  function dateOldest(tracks) {
-    return [...tracks].sort((a, b) => parseDateToNumber(a.album.releaseDate) - parseDateToNumber(b.album.releaseDate));
-  }
-
-  /** Por duração — mais longa primeiro */
-  function durationLongest(tracks) {
-    return [...tracks].sort((a, b) => b.duration - a.duration);
-  }
-
-  /** Por duração — mais curta primeiro */
-  function durationShortest(tracks) {
-    return [...tracks].sort((a, b) => a.duration - b.duration);
-  }
-
-  /** Por popularidade — mais popular primeiro */
-  function popularityDesc(tracks) {
-    return [...tracks].sort((a, b) => b.popularity - a.popularity);
-  }
-
-  /** Por popularidade — menos popular primeiro */
-  function popularityAsc(tracks) {
-    return [...tracks].sort((a, b) => a.popularity - b.popularity);
-  }
-
-  /** Por data de adição — mais recente primeiro */
-  function addedNewest(tracks) {
-    return [...tracks].sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
-  }
-
-  /** Por data de adição — mais antigo primeiro */
-  function addedOldest(tracks) {
-    return [...tracks].sort((a, b) => new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime());
-  }
-
-  // Helper: agrupar por chave
+  // Prototype-safe grouping helper using Map
   function groupBy(arr, keyFn) {
-    const groups = {};
+    const groups = new Map();
     for (const item of arr) {
       const key = keyFn(item);
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(item);
+      let list = groups.get(key);
+      if (!list) {
+        list = [];
+        groups.set(key, list);
+      }
+      list.push(item);
     }
     return groups;
   }
 
-  // Mapeamento nome → função
+  // ============= ALGORITHMS =============
+
+  /** Full Shuffle */
+  function random(tracks) {
+    return shuffle(tracks);
+  }
+
+  /** Shuffle by Album: randomize album order while preserving track order inside each album */
+  function randomByAlbum(tracks) {
+    const groups = groupBy(tracks, t => t.album.id || t.album.name || t.uri);
+    const shuffledKeys = shuffle(Array.from(groups.keys()));
+    return shuffledKeys.flatMap(key => groups.get(key));
+  }
+
+  /** Shuffle by Artist: randomize artist order while keeping each artist's tracks together */
+  function randomByArtist(tracks) {
+    const groups = groupBy(tracks, t => t.artists[0]?.id || t.artistName || t.uri);
+    const shuffledKeys = shuffle(Array.from(groups.keys()));
+    return shuffledKeys.flatMap(key => groups.get(key));
+  }
+
+  /** Shuffle by Name: group by starting letter and shuffle both groups and tracks within them */
+  function randomByName(tracks) {
+    const groups = groupBy(tracks, t => {
+      const first = normalize(t.name).trim().charAt(0);
+      return /\p{L}/u.test(first) ? first : '#';
+    });
+    const shuffledKeys = shuffle(Array.from(groups.keys()));
+    return shuffledKeys.flatMap(key => shuffle(groups.get(key)));
+  }
+
+  /** Track Name A -> Z */
+  function nameAsc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(a.name, b.name));
+  }
+
+  /** Track Name Z -> A */
+  function nameDesc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(b.name, a.name));
+  }
+
+  /** Artist A -> Z */
+  function artistAsc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(a.artistName, b.artistName));
+  }
+
+  /** Artist Z -> A */
+  function artistDesc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(b.artistName, a.artistName));
+  }
+
+  /** Album A -> Z */
+  function albumAsc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(a.album.name, b.album.name));
+  }
+
+  /** Album Z -> A */
+  function albumDesc(tracks) {
+    return [...tracks].sort((a, b) => compareStrings(b.album.name, a.album.name));
+  }
+
+  /** Release Date — Newest first */
+  function dateNewest(tracks) {
+    return [...tracks].sort((a, b) => parseDateToNumber(b.album.releaseDate) - parseDateToNumber(a.album.releaseDate));
+  }
+
+  /** Release Date — Oldest first */
+  function dateOldest(tracks) {
+    return [...tracks].sort((a, b) => parseDateToNumber(a.album.releaseDate) - parseDateToNumber(b.album.releaseDate));
+  }
+
+  /** Duration — Longest first */
+  function durationLongest(tracks) {
+    return [...tracks].sort((a, b) => b.duration - a.duration);
+  }
+
+  /** Duration — Shortest first */
+  function durationShortest(tracks) {
+    return [...tracks].sort((a, b) => a.duration - b.duration);
+  }
+
+  /** Popularity — Most popular first */
+  function popularityDesc(tracks) {
+    return [...tracks].sort((a, b) => b.popularity - a.popularity);
+  }
+
+  /** Popularity — Least popular first */
+  function popularityAsc(tracks) {
+    return [...tracks].sort((a, b) => a.popularity - b.popularity);
+  }
+
+  /** Date Added — Newest first */
+  function addedNewest(tracks) {
+    return [...tracks].sort((a, b) => parseTimestamp(b.addedAt) - parseTimestamp(a.addedAt));
+  }
+
+  /** Date Added — Oldest first */
+  function addedOldest(tracks) {
+    return [...tracks].sort((a, b) => parseTimestamp(a.addedAt) - parseTimestamp(b.addedAt));
+  }
+
   const SORT_MAP = {
-    'random': { fn: random, label: 'Aleatório Total' },
-    'random-album': { fn: randomByAlbum, label: 'Aleatório por Álbum' },
-    'random-artist': { fn: randomByArtist, label: 'Aleatório por Artista' },
-    'random-name': { fn: randomByName, label: 'Aleatório por Nome' },
-    'name-asc': { fn: nameAsc, label: 'Nome A → Z' },
-    'name-desc': { fn: nameDesc, label: 'Nome Z → A' },
-    'artist-asc': { fn: artistAsc, label: 'Artista A → Z' },
-    'artist-desc': { fn: artistDesc, label: 'Artista Z → A' },
-    'album-asc': { fn: albumAsc, label: 'Álbum A → Z' },
-    'album-desc': { fn: albumDesc, label: 'Álbum Z → A' },
-    'date-newest': { fn: dateNewest, label: 'Lançamento — Mais Recente' },
-    'date-oldest': { fn: dateOldest, label: 'Lançamento — Mais Antigo' },
-    'duration-longest': { fn: durationLongest, label: 'Duração — Mais Longa' },
-    'duration-shortest': { fn: durationShortest, label: 'Duração — Mais Curta' },
-    'popularity-desc': { fn: popularityDesc, label: 'Popularidade — Mais Popular' },
-    'popularity-asc': { fn: popularityAsc, label: 'Popularidade — Menos Popular' },
-    'added-newest': { fn: addedNewest, label: 'Adição — Mais Recente' },
-    'added-oldest': { fn: addedOldest, label: 'Adição — Mais Antigo' },
+    'random': { fn: random, label: 'Full Shuffle' },
+    'random-album': { fn: randomByAlbum, label: 'Shuffle by Album' },
+    'random-artist': { fn: randomByArtist, label: 'Shuffle by Artist' },
+    'random-name': { fn: randomByName, label: 'Shuffle by Name' },
+    'name-asc': { fn: nameAsc, label: 'Name A → Z' },
+    'name-desc': { fn: nameDesc, label: 'Name Z → A' },
+    'artist-asc': { fn: artistAsc, label: 'Artist A → Z' },
+    'artist-desc': { fn: artistDesc, label: 'Artist Z → A' },
+    'album-asc': { fn: albumAsc, label: 'Album A → Z' },
+    'album-desc': { fn: albumDesc, label: 'Album Z → A' },
+    'date-newest': { fn: dateNewest, label: 'Release — Newest' },
+    'date-oldest': { fn: dateOldest, label: 'Release — Oldest' },
+    'duration-longest': { fn: durationLongest, label: 'Duration — Longest' },
+    'duration-shortest': { fn: durationShortest, label: 'Duration — Shortest' },
+    'popularity-desc': { fn: popularityDesc, label: 'Popularity — Most Popular' },
+    'popularity-asc': { fn: popularityAsc, label: 'Popularity — Least Popular' },
+    'added-newest': { fn: addedNewest, label: 'Date Added — Newest' },
+    'added-oldest': { fn: addedOldest, label: 'Date Added — Oldest' },
   };
 
   function sort(type, tracks) {

@@ -1,5 +1,5 @@
 /* =========================================================
-   UnBoard 98 — Modernized Windows 98 / Vaporwave Plaza
+   UnBoard 98 — Modernized Windows 98 Desktop Theme
    ========================================================= */
 
 :root {
@@ -12,8 +12,6 @@
   --shadow: #7a7f90;
   --dark: #1c1e26;
   --navy: #103b8c;
-  --navy-soft: rgba(16, 59, 140, 0.16);
-  --spotify: #18a34a;
   --title-a: rgba(10, 31, 120, 0.90);
   --title-b: rgba(27, 101, 196, 0.88);
   --title-c: rgba(56, 141, 232, 0.86);
@@ -55,8 +53,10 @@ a:hover { color: #0a2b6e; }
 img { display: block; }
 u { text-decoration: underline; text-underline-offset: 2px; }
 
+.is-hidden { display: none !important; }
+
 /* =========================================================
-   FUNDO — ONDAS AZUIS
+   DESKTOP BACKGROUND
    ========================================================= */
 .desktop-bg {
   position: fixed;
@@ -97,7 +97,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* =========================================================
-   TELAS = JANELAS
+   WINDOWS & SCREENS
    ========================================================= */
 .screen {
   position: fixed;
@@ -145,7 +145,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   border-radius: 0;
 }
 
-/* Barra de título */
+/* Title bar */
 .title-bar {
   display: flex;
   align-items: center;
@@ -172,7 +172,6 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   text-overflow: ellipsis;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
-.title-svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 .title-bar-controls { display: flex; gap: 2px; flex-shrink: 0; }
 
@@ -191,6 +190,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .tb-btn.tb-close { margin-left: 2px; }
 .tb-btn.tb-close:hover { background: #f7d6d6; }
 .tb-btn:active { box-shadow: var(--pressed); }
+.tb-btn:focus-visible { outline: 1px dotted #111; outline-offset: -3px; }
 
 .ico-min, .ico-max, .ico-close { position: absolute; display: block; pointer-events: none; }
 .ico-min   { left: 5px; bottom: 4px; width: 8px; height: 2px; background: #14161e; }
@@ -208,7 +208,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .ico-close::before { transform: rotate(45deg); }
 .ico-close::after  { transform: rotate(-45deg); }
 
-/* Menu */
+/* Menu bar */
 .menu-bar {
   display: flex;
   gap: 2px;
@@ -217,14 +217,19 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 .menu-item {
   padding: 3px 8px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
   border-radius: 1px;
   cursor: pointer;
-  font-size: 12px;
   transition: background 0.08s ease, color 0.08s ease;
 }
-.menu-item:hover { background: var(--navy); color: #fff; }
+.menu-item:hover,
+.menu-item:focus-visible { background: var(--navy); color: #fff; outline: none; }
 
-/* Corpo */
+/* Window body */
 .window-body {
   flex: 1;
   min-height: 0;
@@ -233,7 +238,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 .window-body.no-pad { padding: 4px; display: flex; }
 
-/* Barra de ferramentas */
+/* Toolbar */
 .toolbar {
   display: flex;
   align-items: center;
@@ -270,6 +275,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 .search-field input {
   flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   background: transparent;
@@ -294,9 +300,9 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   box-shadow: var(--sunken-thin);
   background: var(--face-solid);
 }
-.user-info img[src=""] { display: none; }
+.user-info img[hidden] { display: none; }
 
-/* Barra de status */
+/* Status bar */
 .status-bar {
   display: flex;
   gap: 3px;
@@ -315,22 +321,11 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .status-small { flex: 0 0 auto; }
 
 /* =========================================================
-   ÍCONES PRÓPRIOS & CONTROLES
+   ICONS & CONTROLS
    ========================================================= */
 .ico { display: inline-block; flex-shrink: 0; vertical-align: middle; object-fit: contain; }
-.ico-12 { width: 12px; height: 12px; }
-.ico-13 { width: 13px; height: 13px; }
-.ico-14 { width: 14px; height: 14px; }
-.ico-15 { width: 15px; height: 15px; }
 .ico-16 { width: 16px; height: 16px; }
 .ico-18 { width: 18px; height: 18px; }
-.ico-center { display: block; margin: 0 auto; }
-
-.legend-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
 
 .sm-ico {
   width: 20px;
@@ -433,7 +428,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .sunken-thin { box-shadow: var(--sunken-thin); }
 
 /* =========================================================
-   LOGIN — "Now playing"
+   LOGIN — INTRO CARD
    ========================================================= */
 .now-playing {
   display: flex;
@@ -483,7 +478,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* =========================================================
-   PLAYLISTS — Visualização de ícones
+   PLAYLISTS — ICON VIEW
    ========================================================= */
 .icon-view {
   flex: 1;
@@ -504,11 +499,17 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
   padding: 8px 6px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: inherit;
   border-radius: 2px;
   cursor: pointer;
   transition: background 0.1s ease;
 }
+.playlist-card:focus-visible { outline: 1px dotted #111; outline-offset: -2px; }
 .playlist-card-cover {
   width: 76px;
   height: 76px;
@@ -547,7 +548,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* =========================================================
-   ORGANIZADOR
+   ORGANIZER
    ========================================================= */
 .organizer-body {
   display: grid;
@@ -602,6 +603,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   overflow: hidden;
   margin-bottom: 4px;
 }
+.playlist-desc:empty { display: none; }
 .playlist-stats { font-size: 11px; font-weight: 600; color: var(--navy); }
 
 .sort-groups { display: flex; flex-direction: column; gap: 8px; }
@@ -634,7 +636,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 .push-right { margin-left: auto; }
 
-/* Lista de músicas (ListView) */
+/* Tracks list (ListView) */
 .tracks-container {
   display: flex;
   flex-direction: column;
@@ -643,13 +645,26 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   padding: 2px;
 }
 
+.tracks-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
 .tracks-header,
 .track-row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 2fr) minmax(0, 1.3fr) 108px 62px;
+  grid-template-columns: 38px minmax(0, 2fr) minmax(0, 1.3fr) 132px 54px;
   align-items: center;
 }
 
+.tracks-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  align-items: stretch;
+}
 .tracks-header > span {
   background: var(--face-opaque);
   box-shadow: var(--raised);
@@ -662,14 +677,10 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   text-overflow: ellipsis;
   text-align: left;
 }
-.tracks-header .track-num { text-align: center; }
-.tracks-header .track-duration-col { text-align: right; }
-
-.tracks-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  position: relative;
+.tracks-header .track-num,
+.tracks-header .track-duration-col {
+  padding: 4px 4px;
+  text-align: center;
 }
 
 .track-row {
@@ -679,6 +690,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   transition: background 0.08s ease;
   animation: rowIn 0.2s ease backwards;
 }
+.track-row.no-anim { animation: none; }
 .track-row > * { padding: 0 8px; }
 .track-row:nth-child(even) { background: rgba(232, 236, 248, 0.48); }
 .track-row:hover { background: var(--navy); color: #fff; }
@@ -690,13 +702,14 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 
 @keyframes rowIn { from { opacity: 0; } to { opacity: 1; } }
 
-.track-num {
+.track-row .track-num {
+  padding: 0 4px;
   text-align: center;
   color: #63687a;
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
 }
-.track-title-col {
+.track-row .track-title-col {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -714,19 +727,26 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .track-info { min-width: 0; }
 .track-name,
 .track-artist,
-.track-album-col {
+.track-row .track-album-col,
+.track-row .track-date-col {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .track-name { font-weight: 600; font-size: 12.5px; }
 .track-artist { font-size: 11px; color: #5c6173; }
-.track-album-col { color: #2b3040; font-size: 12px; }
-.track-date-col { color: #54596b; font-size: 11px; white-space: nowrap; }
-.track-duration-col { text-align: right; font-variant-numeric: tabular-nums; color: #2b3040; font-size: 11.5px; }
+.track-row .track-album-col { color: #2b3040; font-size: 12px; }
+.track-row .track-date-col { color: #54596b; font-size: 11px; }
+.track-row .track-duration-col {
+  padding: 0 4px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: #2b3040;
+  font-size: 11.5px;
+}
 
 /* =========================================================
-   CARREGANDO
+   LOADING INDICATOR
    ========================================================= */
 .loading-spinner {
   display: none;
@@ -761,7 +781,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 @keyframes marquee { to { left: 196px; } }
 
 /* =========================================================
-   BARRA DE TAREFAS + CONTROLE DE FUNDO + MENU INICIAR
+   TASKBAR, LANGUAGE SWITCHER & START MENU
    ========================================================= */
 .taskbar {
   position: fixed;
@@ -787,7 +807,6 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   padding: 0 9px 0 6px;
   gap: 5px;
 }
-.start-svg { width: 15px; height: 15px; }
 
 .taskbar-sep {
   width: 2px;
@@ -814,6 +833,10 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.task-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .task-btn.active {
   box-shadow: var(--pressed);
   background: var(--dither);
@@ -821,7 +844,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   padding-top: 1px;
 }
 
-/* Indicador de idioma estilo Windows 98 */
+/* Windows 98 taskbar language indicator */
 .lang-btn {
   min-width: 30px;
   min-height: 26px;
@@ -859,14 +882,26 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  width: 100%;
   padding: 5px 10px;
+  background: transparent;
+  border: none;
+  font: inherit;
   font-size: 12px;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   border-radius: 1px;
   transition: background 0.08s ease, color 0.08s ease;
 }
 .lang-item.selected { font-weight: 600; color: var(--navy); }
-.lang-item:hover { background: var(--navy); color: #fff; }
+.lang-item:hover,
+.lang-item:focus-visible { background: var(--navy); color: #fff; outline: none; }
+.lang-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .lang-item .lang-code {
   font-size: 10.5px;
   font-weight: 700;
@@ -939,17 +974,23 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .start-menu-band b { color: #fff; }
 
 .start-menu-items { list-style: none; padding: 2px; min-width: 215px; }
-.start-menu-items li {
+.start-menu-items .sm-item {
   display: flex;
   align-items: center;
   gap: 9px;
+  width: 100%;
   padding: 7px 18px 7px 8px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   border-radius: 1px;
   transition: background 0.08s ease, color 0.08s ease;
 }
-.start-menu-items li:hover { background: var(--navy); color: #fff; }
-.sm-icon { width: 20px; text-align: center; font-size: 15px; }
+.start-menu-items .sm-item:hover,
+.start-menu-items .sm-item:focus-visible { background: var(--navy); color: #fff; outline: none; }
 .start-menu-items li.sm-sep {
   padding: 0;
   margin: 4px 2px;
@@ -957,10 +998,9 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   border-bottom: 1px solid var(--hilight);
   cursor: default;
 }
-.start-menu-items li.sm-sep:hover { background: none; }
 
 /* =========================================================
-   BALÕES (TOASTS)
+   TOAST NOTIFICATIONS
    ========================================================= */
 .toast-container {
   position: fixed;
@@ -1016,7 +1056,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 @keyframes balloonOut { to { opacity: 0; transform: translateY(8px); } }
 
 /* =========================================================
-   DIÁLOGOS
+   MODAL DIALOGS
    ========================================================= */
 .modal {
   position: fixed;
@@ -1033,7 +1073,6 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .dialog .window-body { padding: 14px; }
 
 .dialog-row { display: flex; gap: 12px; align-items: flex-start; }
-.dialog-icon { font-size: 28px; line-height: 1; }
 .dialog-row p { margin-top: 4px; line-height: 1.45; color: #2b2f3d; }
 #info-text p + p { margin-top: 6px; }
 
@@ -1050,7 +1089,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* =========================================================
-   SCROLLBARS ESTILO 98 REFINADAS
+   CLASSIC SCROLLBARS
    ========================================================= */
 * { scrollbar-color: var(--face-opaque) var(--light); }
 
@@ -1083,7 +1122,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* =========================================================
-   RESPONSIVO (TABLET & CELULAR)
+   RESPONSIVE (TABLET & MOBILE)
    ========================================================= */
 @media (max-width: 860px) {
   .screen { padding: 0; }
@@ -1106,7 +1145,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 
   .title-bar[data-drag] { cursor: default; }
 
-  /* Fluxo único de rolagem no organizador (sem scroll duplo travado) */
+  /* Single-scroll flow inside Organizer on touch devices */
   .organizer-body {
     display: flex;
     flex-direction: column;
@@ -1138,13 +1177,11 @@ u { text-decoration: underline; text-underline-offset: 2px; }
     overflow: visible;
   }
   .tracks-header {
-    position: sticky;
     top: -8px;
-    z-index: 5;
   }
 
   .tracks-header,
-  .track-row { grid-template-columns: 34px minmax(0, 1fr) 56px; }
+  .track-row { grid-template-columns: 34px minmax(0, 1fr) 50px; }
   .track-album-col,
   .track-date-col { display: none; }
 
@@ -1179,7 +1216,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
     font-size: 11.5px;
   }
 
-  /* Evita zoom automático no iOS ao focar inputs */
+  /* Prevent automatic iOS zoom on input focus */
   .field98 {
     height: 34px;
     font-size: 16px;
@@ -1193,7 +1230,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   }
   .search-field input { font-size: 16px; }
 
-  /* Toolbar limpa no celular */
+  /* Clean mobile toolbar */
   .toolbar { gap: 6px; padding: 6px; }
   .toolbar-label,
   .toolbar-sep { display: none; }
@@ -1218,12 +1255,12 @@ u { text-decoration: underline; text-underline-offset: 2px; }
     flex: 1 1 auto;
   }
 
-  /* Login compacto e centralizado sobre o fundo */
+  /* Compact centered login */
   #login-screen { padding: 10px; }
   .window-small { width: 100%; max-width: 420px; }
   .window-small .window-body { padding: 10px; }
 
-  /* Grade de playlists 3 colunas simétricas */
+  /* Symmetrical 3-column playlist grid */
   .playlists-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px 4px;
@@ -1237,15 +1274,20 @@ u { text-decoration: underline; text-underline-offset: 2px; }
     aspect-ratio: 1;
   }
 
-  /* Organizador: grupos compactos */
+  /* Compact organizer controls & list */
   .group-box { padding: 6px 7px 8px; }
   .sort-buttons { gap: 4px; }
   .playlist-cover { width: 60px; height: 60px; }
   .playlist-title { font-size: 13px; }
+  .tracks-header > span { padding: 4px 5px; }
+  .tracks-header .track-num,
+  .tracks-header .track-duration-col { padding: 4px 3px; }
   .track-row { padding: 6px 0; }
   .track-row > * { padding: 0 5px; }
+  .track-row .track-num,
+  .track-row .track-duration-col { padding: 0 3px; }
 
-  /* Taskbar amigável ao toque */
+  /* Touch-friendly taskbar */
   .taskbar { gap: 4px; padding: 4px 4px calc(3px + var(--safe-bottom)); }
   .start-btn,
   .task-btn,
@@ -1263,7 +1305,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   }
   .tray { padding: 0 7px; font-size: 11px; }
 
-  /* Toasts centralizados sem cortar */
+  /* Full-width mobile toasts */
   .toast-container {
     left: 10px;
     right: 10px;
@@ -1272,8 +1314,8 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   .toast { max-width: 100%; }
   .toast::after { display: none; }
 
-  /* Menus com alvos maiores ao toque */
-  .start-menu-items li { padding: 9px 16px 9px 10px; }
+  /* Larger touch targets on popup menus */
+  .start-menu-items .sm-item { padding: 9px 16px 9px 10px; }
   .lang-item { padding: 7px 10px; }
 }
 

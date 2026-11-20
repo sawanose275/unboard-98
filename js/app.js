@@ -12,6 +12,13 @@
   let currentTracks = [];
   let previousTracks = null;
   let currentSortType = null;
+  let sortRestored = false;
+  let loadRequestId = 0;
+
+  const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="#8d94a8" width="1" height="1"/></svg>'
+  );
+  const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
   // ---- DOM Refs ----
   const screens = {
@@ -63,30 +70,71 @@
   };
 
   // ---- Utilities ----
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, ch => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[ch]));
+  }
+
+  function safeImageUrl(url) {
+    if (typeof url !== 'string' || !url.trim()) return '';
+    try {
+      const parsed = new URL(url.trim());
+      if (parsed.protocol === 'https:') return parsed.href;
+    } catch { /* ignore */ }
+    return '';
+  }
+
   function showScreen(name) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
     screens[name].classList.add('active');
   }
 
+  function setConfigOpen(open) {
+    els.configToggle.classList.toggle('open', open);
+    els.configPanel.classList.toggle('show', open);
+    els.configToggle.setAttribute('aria-expanded', String(open));
+  }
+
+  function setUserAvatar(imgEl, url) {
+    const safeUrl = safeImageUrl(url);
+    if (safeUrl) {
+      imgEl.src = safeUrl;
+      imgEl.hidden = false;
+    } else {
+      imgEl.src = TRANSPARENT_PIXEL;
+      imgEl.hidden = true;
+    }
+  }
+
   function formatDuration(ms) {
-    const totalSec = Math.floor(ms / 1000);
-    const min = Math.floor(totalSec / 60);
+    const totalSec = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+    const hours = Math.floor(totalSec / 3600);
+    const min = Math.floor((totalSec % 3600) / 60);
     const sec = totalSec % 60;
+    if (hours > 0) {
+      return `${hours}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    }
     return `${min}:${sec.toString().padStart(2, '0')}`;
   }
 
   function formatDate(dateStr) {
     if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '—';
     try {
-      const d = new Date(dateStr);
       return d.toLocaleDateString(I18n.getLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
     } catch {
-      return dateStr;
+      return '—';
     }
   }
 
   function formatTotalDuration(tracks) {
-    const totalMs = tracks.reduce((sum, t) => sum + t.duration, 0);
+    const totalMs = tracks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
     const totalMin = Math.floor(totalMs / 60000);
     const hours = Math.floor(totalMin / 60);
     const mins = totalMin % 60;
@@ -116,17 +164,90 @@
     els.progressTitle.textContent = title;
     els.progressText.textContent = text;
     els.progressBar.style.width = '0%';
-    els.progressModal.style.display = 'flex';
+    els.progressModal.classList.remove('is-hidden');
   }
 
   function updateProgress(current, total) {
-    const pct = Math.round((current / total) * 100);
+    const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
     els.progressBar.style.width = `${pct}%`;
     els.progressText.textContent = I18n.t('tracksProcessed', { current, total });
   }
 
   function hideProgressModal() {
-    els.progressModal.style.display = 'none';
+    els.progressModal.classList.add('is-hidden');
+  }
+
+  function clearSortButtons() {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  function resetOrganizerState() {
+    loadRequestId++;
+    currentPlaylist = null;
+    originalTracks = [];
+    currentTracks = [];
+    previousTracks = null;
+    currentSortType = null;
+    sortRestored = false;
+    els.playlistTitle.textContent = '';
+    els.playlistDesc.textContent = '';
+    els.playlistStats.textContent = '';
+    els.playlistCover.src = TRANSPARENT_PIXEL;
+    els.tracksList.innerHTML = '';
+    els.tracksLoading.classList.remove('show');
+    els.actionBar.classList.add('is-hidden');
+    els.undoBtn.classList.add('is-hidden');
+    els.currentSortLabel.textContent = I18n.t('noSortApplied');
+    clearSortButtons();
+  }
+
+  function resetAppState() {
+    resetOrganizerState();
+    currentUser = null;
+    allPlaylists = [];
+    els.playlistSearch.value = '';
+    els.playlistsGrid.innerHTML = '';
+    els.playlistsLoading.classList.remove('show');
+    setUserAvatar(els.userAvatar, '');
+    setUserAvatar(els.userAvatar2, '');
+    els.userName.textContent = '';
+    els.userName2.textContent = '';
+  }
+
+  function bindImageFallback(container) {
+    container.querySelectorAll('img').forEach(img => {
+      img.addEventListener('error', () => {
+        if (img.src !== FALLBACK_IMG) img.src = FALLBACK_IMG;
+      }, { once: true });
+    });
+  }
+
+  function saveConfigFromInputs() {
+    const id = els.clientIdInput.value.trim();
+    const redirectUri = els.redirectUriInput ? els.redirectUriInput.value.trim() : '';
+
+    if (!SpotifyAuth.isValidClientId(id)) {
+      toast(I18n.t('toastInvalidClientId'), 'error');
+      return false;
+    }
+
+    if (redirectUri && !SpotifyAuth.isValidRedirectUri(redirectUri)) {
+      toast(I18n.t('toastInvalidRedirectUri'), 'error');
+      return false;
+    }
+
+    SpotifyAuth.setClientId(id);
+    if (redirectUri) {
+      SpotifyAuth.setRedirectUri(redirectUri);
+    } else {
+      SpotifyAuth.setRedirectUri('');
+      if (els.redirectUriInput) {
+        els.redirectUriInput.value = SpotifyAuth.getRedirectUri();
+      }
+    }
+
+    toast(I18n.t('toastConfigSaved'), 'success');
+    return true;
   }
 
   // ---- Init ----
@@ -142,6 +263,9 @@
       els.clientIdInput.value = savedId;
     }
 
+    // Bind events before async auth/data loading so UI is always responsive
+    bindEvents();
+
     try {
       const isCallback = await SpotifyAuth.handleCallback();
       if (isCallback) {
@@ -156,24 +280,40 @@
     } else {
       showScreen('login');
     }
-
-    bindEvents();
   }
 
   // ---- Events ----
   function bindEvents() {
+    [els.userAvatar, els.userAvatar2].forEach(img => {
+      img.addEventListener('error', () => { img.hidden = true; });
+    });
+    els.playlistCover.addEventListener('error', () => {
+      if (els.playlistCover.src !== FALLBACK_IMG) els.playlistCover.src = FALLBACK_IMG;
+    });
+
     els.loginBtn.addEventListener('click', async () => {
       try {
-        // Auto-save Client ID if user pasted it in the field without clicking Save first
-        if (els.clientIdInput && els.clientIdInput.value.trim()) {
-          SpotifyAuth.setClientId(els.clientIdInput.value.trim());
+        const inputId = els.clientIdInput ? els.clientIdInput.value.trim() : '';
+        const inputUri = els.redirectUriInput ? els.redirectUriInput.value.trim() : '';
+
+        if (inputId) {
+          if (!SpotifyAuth.isValidClientId(inputId)) {
+            toast(I18n.t('toastInvalidClientId'), 'error');
+            return;
+          }
+          SpotifyAuth.setClientId(inputId);
         }
-        if (els.redirectUriInput && els.redirectUriInput.value.trim()) {
-          SpotifyAuth.setRedirectUri(els.redirectUriInput.value.trim());
+
+        if (inputUri) {
+          if (!SpotifyAuth.isValidRedirectUri(inputUri)) {
+            toast(I18n.t('toastInvalidRedirectUri'), 'error');
+            return;
+          }
+          SpotifyAuth.setRedirectUri(inputUri);
         }
+
         if (!SpotifyAuth.getClientId() && els.configPanel && !els.configPanel.classList.contains('show')) {
-          els.configToggle.classList.add('open');
-          els.configPanel.classList.add('show');
+          setConfigOpen(true);
           els.clientIdInput.focus();
         }
         await SpotifyAuth.login();
@@ -183,23 +323,19 @@
     });
 
     els.configToggle.addEventListener('click', () => {
-      els.configToggle.classList.toggle('open');
-      els.configPanel.classList.toggle('show');
+      setConfigOpen(!els.configPanel.classList.contains('show'));
     });
 
-    els.saveConfigBtn.addEventListener('click', () => {
-      const id = els.clientIdInput.value.trim();
-      const redirectUri = els.redirectUriInput ? els.redirectUriInput.value.trim() : '';
+    els.saveConfigBtn.addEventListener('click', saveConfigFromInputs);
 
-      if (!id) {
-        toast(I18n.t('toastInvalidClientId'), 'error');
-        return;
-      }
-      SpotifyAuth.setClientId(id);
-      if (redirectUri) {
-        SpotifyAuth.setRedirectUri(redirectUri);
-      }
-      toast(I18n.t('toastConfigSaved'), 'success');
+    [els.clientIdInput, els.redirectUriInput].forEach(input => {
+      if (!input) return;
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          saveConfigFromInputs();
+        }
+      });
     });
 
     els.playlistSearch.addEventListener('input', () => {
@@ -209,26 +345,23 @@
 
     els.logoutBtn.addEventListener('click', () => {
       SpotifyAuth.logout();
+      resetAppState();
       showScreen('login');
       toast(I18n.t('toastLoggedOut'), 'info');
     });
 
     els.backBtn.addEventListener('click', () => {
-      currentPlaylist = null;
-      originalTracks = [];
-      currentTracks = [];
-      previousTracks = null;
-      currentSortType = null;
+      resetOrganizerState();
       showScreen('playlists');
-      clearSortButtons();
     });
 
     document.querySelectorAll('.sort-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        if (currentTracks.length === 0) return;
         const sortType = btn.dataset.sort;
         applySortType(sortType);
 
-        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        clearSortButtons();
         btn.classList.add('active');
       });
     });
@@ -237,9 +370,10 @@
       if (previousTracks) {
         currentTracks = previousTracks;
         previousTracks = null;
-        renderTracks(currentTracks);
-        els.undoBtn.style.display = 'none';
         currentSortType = null;
+        sortRestored = true;
+        renderTracks(currentTracks);
+        els.undoBtn.classList.add('is-hidden');
         els.currentSortLabel.textContent = I18n.t('orderRestored');
         clearSortButtons();
       }
@@ -262,10 +396,14 @@
 
         originalTracks = [...currentTracks];
         previousTracks = null;
-        els.undoBtn.style.display = 'none';
+        els.undoBtn.classList.add('is-hidden');
       } catch (err) {
         hideProgressModal();
-        if (err.status === 403 || (err.message && err.message.includes('Forbidden'))) {
+        if (err.code === 'AUTH_EXPIRED') {
+          resetAppState();
+          showScreen('login');
+          toast(err.message, 'error');
+        } else if (err.status === 403 || (err.message && err.message.includes('Forbidden'))) {
           toast(I18n.t('forbiddenToast'), 'error');
         } else {
           toast(I18n.t('toastSaveError', { msg: err.message }), 'error');
@@ -290,12 +428,10 @@
         els.currentSortLabel.textContent = I18n.t('sortLabelPrefix', {
           label: Sorters.getLabel(currentSortType),
         });
+      } else if (sortRestored) {
+        els.currentSortLabel.textContent = I18n.t('orderRestored');
       }
     });
-  }
-
-  function clearSortButtons() {
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   }
 
   // ---- Load Data ----
@@ -308,51 +444,41 @@
       currentUser = await SpotifyAPI.getMe();
 
       const avatarUrl = currentUser.images?.[0]?.url || '';
-      els.userAvatar.src = avatarUrl;
+      setUserAvatar(els.userAvatar, avatarUrl);
       els.userName.textContent = currentUser.display_name || '';
-      els.userAvatar2.src = avatarUrl;
+      setUserAvatar(els.userAvatar2, avatarUrl);
       els.userName2.textContent = currentUser.display_name || '';
 
       allPlaylists = await SpotifyAPI.getAllMyPlaylists();
-      renderPlaylists(allPlaylists);
-
       els.playlistsLoading.classList.remove('show');
+      renderPlaylists(allPlaylists);
     } catch (err) {
       els.playlistsLoading.classList.remove('show');
       toast(I18n.t('toastLoadError', { msg: err.message }), 'error');
 
       if (err.code === 'AUTH_EXPIRED') {
         SpotifyAuth.logout();
+        resetAppState();
         showScreen('login');
       }
     }
   }
 
-  const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="#8d94a8" width="1" height="1"/></svg>');
-
-  function bindImageFallback(container) {
-    container.querySelectorAll('img').forEach(img => {
-      img.addEventListener('error', () => {
-        if (img.src !== FALLBACK_IMG) img.src = FALLBACK_IMG;
-      }, { once: true });
-    });
-  }
-
   // ---- Render Playlists ----
   function renderPlaylists(playlists) {
     els.playlistsGrid.innerHTML = playlists.map(pl => {
-      const img = pl.images?.[0]?.url || FALLBACK_IMG;
+      const img = safeImageUrl(pl.images?.[0]?.url) || FALLBACK_IMG;
       const count = pl.tracks?.total ?? pl.items?.total ?? 0;
       const isMine = !currentUser || !pl.owner || pl.owner.id === currentUser.id;
       const ownerLabel = isMine
         ? ''
-        : ` • ${I18n.t('byOwner', { owner: escapeHtml(pl.owner?.display_name || I18n.t('otherOwner')) })}`;
+        : ` • ${escapeHtml(I18n.t('byOwner', { owner: pl.owner?.display_name || I18n.t('otherOwner') }))}`;
       return `
-        <div class="playlist-card" data-id="${escapeHtml(pl.id)}">
-          <img class="playlist-card-cover" src="${escapeHtml(img)}" alt="${escapeHtml(pl.name)}" loading="lazy" />
-          <div class="playlist-card-name" title="${escapeHtml(pl.name)}">${escapeHtml(pl.name)}</div>
-          <div class="playlist-card-info">${formatTrackCount(count)}${ownerLabel}</div>
-        </div>
+        <button type="button" class="playlist-card" data-id="${escapeHtml(pl.id)}">
+          <img class="playlist-card-cover" src="${escapeHtml(img)}" alt="${escapeHtml(pl.name)}" loading="lazy">
+          <span class="playlist-card-name" title="${escapeHtml(pl.name)}">${escapeHtml(pl.name)}</span>
+          <span class="playlist-card-info">${escapeHtml(formatTrackCount(count))}${ownerLabel}</span>
+        </button>
       `;
     }).join('');
 
@@ -380,30 +506,26 @@
 
   // ---- Open Playlist ----
   async function openPlaylist(playlist) {
+    resetOrganizerState();
+    const reqId = ++loadRequestId;
     currentPlaylist = playlist;
     showScreen('organizer');
 
-    els.playlistCover.src = playlist.images?.[0]?.url || '';
-    els.playlistTitle.textContent = playlist.name;
+    els.playlistCover.src = safeImageUrl(playlist.images?.[0]?.url) || FALLBACK_IMG;
+    els.playlistTitle.textContent = playlist.name || '';
     els.playlistDesc.textContent = playlist.description || '';
     els.playlistStats.textContent = I18n.t('loadingTracks');
-
-    originalTracks = [];
-    currentTracks = [];
-    previousTracks = null;
-    currentSortType = null;
-    els.actionBar.style.display = 'none';
-    els.undoBtn.style.display = 'none';
-    els.tracksList.innerHTML = '';
-    clearSortButtons();
-
     els.tracksLoading.classList.add('show');
 
     try {
-      originalTracks = await SpotifyAPI.getAllPlaylistTracks(playlist.id, (loaded, total) => {
+      const loadedTracks = await SpotifyAPI.getAllPlaylistTracks(playlist.id, (loaded, total) => {
+        if (reqId !== loadRequestId) return;
         els.playlistStats.textContent = I18n.t('loadingProgress', { loaded, total });
       });
 
+      if (reqId !== loadRequestId) return;
+
+      originalTracks = loadedTracks;
       currentTracks = [...originalTracks];
       els.playlistStats.textContent = I18n.t('playlistStatsText', {
         count: formatTrackCount(originalTracks.length),
@@ -413,8 +535,13 @@
 
       renderTracks(currentTracks);
     } catch (err) {
+      if (reqId !== loadRequestId) return;
       els.tracksLoading.classList.remove('show');
-      if (err.status === 403 || (err.message && (err.message.includes('Forbidden') || err.message.includes('403')))) {
+      if (err.code === 'AUTH_EXPIRED') {
+        resetAppState();
+        showScreen('login');
+        toast(err.message, 'error');
+      } else if (err.status === 403 || (err.message && (err.message.includes('Forbidden') || err.message.includes('403')))) {
         els.playlistStats.textContent = I18n.t('forbiddenStats');
         toast(I18n.t('forbiddenToast'), 'error');
       } else {
@@ -430,16 +557,17 @@
 
     previousTracks = [...currentTracks];
     currentSortType = type;
+    sortRestored = false;
 
     currentTracks = Sorters.sort(type, originalTracks);
 
     renderTracks(currentTracks);
 
-    els.actionBar.style.display = 'flex';
+    els.actionBar.classList.remove('is-hidden');
     els.currentSortLabel.textContent = I18n.t('sortLabelPrefix', {
       label: Sorters.getLabel(type),
     });
-    els.undoBtn.style.display = 'inline-flex';
+    els.undoBtn.classList.remove('is-hidden');
   }
 
   // ---- Render Tracks ----
@@ -448,21 +576,24 @@
 
     tracks.forEach((track, i) => {
       const row = document.createElement('div');
-      row.className = 'track-row';
-      row.style.animationDelay = `${Math.min(i * 15, 500)}ms`;
+      row.className = i < 40 ? 'track-row' : 'track-row no-anim';
+      if (i < 40) {
+        row.style.animationDelay = `${Math.min(i * 12, 360)}ms`;
+      }
 
+      const thumbUrl = safeImageUrl(track.album.image) || FALLBACK_IMG;
       row.innerHTML = `
         <span class="track-num">${i + 1}</span>
         <div class="track-title-col">
-          <img class="track-thumb" src="${escapeHtml(track.album.image || FALLBACK_IMG)}" alt="" loading="lazy" />
+          <img class="track-thumb" src="${escapeHtml(thumbUrl)}" alt="" loading="lazy">
           <div class="track-info">
             <div class="track-name" title="${escapeHtml(track.name)}">${escapeHtml(track.name)}</div>
             <div class="track-artist">${escapeHtml(track.artistName)}</div>
           </div>
         </div>
         <span class="track-album-col" title="${escapeHtml(track.album.name)}">${escapeHtml(track.album.name)}</span>
-        <span class="track-date-col">${formatDate(track.addedAt)}</span>
-        <span class="track-duration-col">${formatDuration(track.duration)}</span>
+        <span class="track-date-col" title="${escapeHtml(formatDate(track.addedAt))}">${escapeHtml(formatDate(track.addedAt))}</span>
+        <span class="track-duration-col">${escapeHtml(formatDuration(track.duration))}</span>
       `;
 
       fragment.appendChild(row);
@@ -471,12 +602,6 @@
     els.tracksList.innerHTML = '';
     els.tracksList.appendChild(fragment);
     bindImageFallback(els.tracksList);
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
   }
 
   // ---- Start ----

@@ -23,6 +23,24 @@
   let lastActiveId = null;
 
   // ---------- Language Switcher (Win98 taskbar indicator) ----------
+  function createLangRow(labelNode, isSelected, onClick) {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'lang-item' + (isSelected ? ' selected' : '');
+    row.setAttribute('role', 'menuitemradio');
+    row.setAttribute('aria-checked', String(isSelected));
+
+    const check = document.createElement('span');
+    check.className = 'lang-check';
+    check.setAttribute('aria-hidden', 'true');
+    check.textContent = isSelected ? '•' : '';
+
+    row.appendChild(labelNode);
+    row.appendChild(check);
+    row.addEventListener('click', onClick);
+    return row;
+  }
+
   function renderLanguageMenu() {
     const pref = I18n.getPreference();
     const detected = I18n.getDetectedLang();
@@ -32,38 +50,36 @@
 
     langMenu.innerHTML = '';
 
-    const autoRow = document.createElement('div');
-    autoRow.className = 'lang-item' + (pref === 'auto' ? ' selected' : '');
-    autoRow.innerHTML = `
-      <span>${I18n.t('langAuto', { lang: I18n.getNativeName(detected) })}</span>
-      <span class="lang-check">${pref === 'auto' ? '•' : ''}</span>
-    `;
-    autoRow.addEventListener('click', () => {
+    const autoLabel = document.createElement('span');
+    autoLabel.textContent = I18n.t('langAuto', { lang: I18n.getNativeName(detected) });
+    langMenu.appendChild(createLangRow(autoLabel, pref === 'auto', () => {
       I18n.setLang('auto');
       setLangMenu(false);
-    });
-    langMenu.appendChild(autoRow);
+    }));
 
     const sep = document.createElement('div');
     sep.className = 'lang-sep';
+    sep.setAttribute('role', 'separator');
     langMenu.appendChild(sep);
 
     I18n.LANGUAGES.forEach(l => {
-      const row = document.createElement('div');
-      const isSelected = pref === l.code;
-      row.className = 'lang-item' + (isSelected ? ' selected' : '');
-      row.innerHTML = `
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span class="lang-code">${l.badge}</span>
-          <span>${l.native}</span>
-        </span>
-        <span class="lang-check">${isSelected ? '•' : ''}</span>
-      `;
-      row.addEventListener('click', () => {
+      const wrap = document.createElement('span');
+      wrap.className = 'lang-name-wrap';
+
+      const codeSpan = document.createElement('span');
+      codeSpan.className = 'lang-code';
+      codeSpan.textContent = l.badge;
+
+      const nativeSpan = document.createElement('span');
+      nativeSpan.textContent = l.native;
+
+      wrap.appendChild(codeSpan);
+      wrap.appendChild(nativeSpan);
+
+      langMenu.appendChild(createLangRow(wrap, pref === l.code, () => {
         I18n.setLang(l.code);
         setLangMenu(false);
-      });
-      langMenu.appendChild(row);
+      }));
     });
   }
 
@@ -77,6 +93,7 @@
     }
     langMenu.classList.toggle('open', open);
     langBtn.classList.toggle('pressed', open);
+    langBtn.setAttribute('aria-expanded', String(open));
   }
 
   langBtn.addEventListener('click', e => {
@@ -112,16 +129,31 @@
     'organizer-screen': 'icons/organizer.png',
   };
 
-  function updateDynamicStatusBars() {
-    const playlistCount = $$('#playlists-grid .playlist-card').length;
-    $('#playlists-status').textContent = playlistCount
-      ? I18n.t('playlistsCountStatus', { count: playlistCount })
-      : I18n.t('selectPlaylistHint');
+  function updatePlaylistsStatus() {
+    if ($('#playlists-loading').classList.contains('show')) {
+      $('#playlists-status').textContent = I18n.t('loadingPlaylists');
+      return;
+    }
+    const n = $$('#playlists-grid .playlist-card').length;
+    $('#playlists-status').textContent = n
+      ? I18n.t('playlistsCountStatus', { count: n })
+      : (isLoggedIn() ? I18n.t('noPlaylistsFound') : I18n.t('selectPlaylistHint'));
+  }
 
-    const trackCount = $$('#tracks-list .track-row').length;
-    $('#organizer-status').textContent = trackCount
-      ? I18n.t('tracksCountStatus', { count: trackCount })
+  function updateOrganizerStatus() {
+    if ($('#tracks-loading').classList.contains('show')) {
+      $('#organizer-status').textContent = I18n.t('loadingTracks');
+      return;
+    }
+    const n = $$('#tracks-list .track-row').length;
+    $('#organizer-status').textContent = n
+      ? I18n.t('tracksCountStatus', { count: n })
       : I18n.t('ready');
+  }
+
+  function updateDynamicStatusBars() {
+    updatePlaylistsStatus();
+    updateOrganizerStatus();
 
     const name = $('#playlist-title').textContent.trim();
     $('#organizer-window-title').textContent = name
@@ -141,13 +173,18 @@
     if (!current) return;
 
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'btn98 task-btn' + (current.classList.contains('minimized') ? '' : ' active');
-    const iconSrc = TASK_ICONS[current.id] || 'icons/unboard.png';
-    btn.innerHTML = `<img class="ico ico-16" src="${iconSrc}" alt="" />`;
+
+    const img = document.createElement('img');
+    img.className = 'ico ico-16';
+    img.src = TASK_ICONS[current.id] || 'icons/unboard.png';
+    img.alt = '';
+
     const label = document.createElement('span');
     label.textContent = screenTitle(current);
-    label.style.overflow = 'hidden';
-    label.style.textOverflow = 'ellipsis';
+
+    btn.appendChild(img);
     btn.appendChild(label);
     btn.title = label.textContent;
     btn.addEventListener('click', () => {
@@ -165,19 +202,11 @@
     renderTaskbar();
   }).observe($('#playlist-title'), { childList: true, characterData: true, subtree: true });
 
-  new MutationObserver(() => {
-    const n = $$('#playlists-grid .playlist-card').length;
-    $('#playlists-status').textContent = n
-      ? I18n.t('playlistsCountStatus', { count: n })
-      : I18n.t('noPlaylistsFound');
-  }).observe($('#playlists-grid'), { childList: true });
+  new MutationObserver(updatePlaylistsStatus).observe($('#playlists-grid'), { childList: true });
+  new MutationObserver(updatePlaylistsStatus).observe($('#playlists-loading'), { attributes: true, attributeFilter: ['class'] });
 
-  new MutationObserver(() => {
-    const n = $$('#tracks-list .track-row').length;
-    $('#organizer-status').textContent = n
-      ? I18n.t('tracksCountStatus', { count: n })
-      : I18n.t('ready');
-  }).observe($('#tracks-list'), { childList: true });
+  new MutationObserver(updateOrganizerStatus).observe($('#tracks-list'), { childList: true });
+  new MutationObserver(updateOrganizerStatus).observe($('#tracks-loading'), { attributes: true, attributeFilter: ['class'] });
 
   // ---------- Window controls ----------
   $$('.screen').forEach(screen => {
@@ -220,25 +249,46 @@
 
   // ---------- Drag windows ----------
   function enableDrag(handle, win) {
-    let startX, startY, baseX = 0, baseY = 0, dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let baseX = 0;
+    let baseY = 0;
+    let minDx = -Infinity;
+    let maxDx = Infinity;
+    let minDy = -Infinity;
+    let maxDy = Infinity;
+    let dragging = false;
 
     handle.addEventListener('pointerdown', e => {
       if (e.button !== 0 || e.target.closest('.tb-btn')) return;
       if (win.classList.contains('maximized') || window.innerWidth <= 860) return;
+
+      const rect = win.getBoundingClientRect();
+      const taskbarH = $('.taskbar')?.offsetHeight || 34;
+
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
-      baseX = parseFloat(win.dataset.x || 0);
-      baseY = parseFloat(win.dataset.y || 0);
+      baseX = parseFloat(win.dataset.x || '0');
+      baseY = parseFloat(win.dataset.y || '0');
+
+      // Keep title bar reachable inside viewport
+      minDx = 80 - rect.right;
+      maxDx = window.innerWidth - 80 - rect.left;
+      minDy = -rect.top;
+      maxDy = window.innerHeight - taskbarH - 32 - rect.top;
+
       handle.setPointerCapture(e.pointerId);
     });
 
     handle.addEventListener('pointermove', e => {
       if (!dragging) return;
-      const x = baseX + (e.clientX - startX);
-      const y = baseY + (e.clientY - startY);
-      win.dataset.x = x;
-      win.dataset.y = y;
+      const dx = Math.min(maxDx, Math.max(minDx, e.clientX - startX));
+      const dy = Math.min(maxDy, Math.max(minDy, e.clientY - startY));
+      const x = baseX + dx;
+      const y = baseY + dy;
+      win.dataset.x = String(x);
+      win.dataset.y = String(y);
       win.style.transform = `translate(${x}px, ${y}px)`;
     });
 
@@ -252,12 +302,19 @@
     infoTitle.textContent = title;
     infoIcon.src = iconSrc;
     infoText.innerHTML = html;
-    infoModal.style.display = 'flex';
+    infoModal.classList.remove('is-hidden');
     $('#info-ok').focus();
   }
-  function hideInfo() { infoModal.style.display = 'none'; }
+
+  function hideInfo() {
+    infoModal.classList.add('is-hidden');
+  }
+
   $('#info-ok').addEventListener('click', hideInfo);
   $('#info-close-x').addEventListener('click', hideInfo);
+  infoModal.addEventListener('click', e => {
+    if (e.target === infoModal) hideInfo();
+  });
 
   function handleCommand(cmd) {
     switch (cmd) {
@@ -293,29 +350,39 @@
     if (open) setLangMenu(false);
     startMenu.classList.toggle('open', open);
     startBtn.classList.toggle('pressed', open);
+    startBtn.setAttribute('aria-expanded', String(open));
   }
+
   startBtn.addEventListener('click', e => {
     e.stopPropagation();
     setStart(!startMenu.classList.contains('open'));
   });
-  $$('[data-start]', startMenu).forEach(li => {
-    li.addEventListener('click', e => {
+
+  $$('[data-start]', startMenu).forEach(item => {
+    item.addEventListener('click', e => {
       e.stopPropagation();
-      const cmd = li.dataset.start;
+      const cmd = item.dataset.start;
       setStart(false);
       handleCommand(cmd);
     });
   });
+
   document.addEventListener('click', e => {
-    if (!startMenu.contains(e.target)) setStart(false);
+    if (!startMenu.contains(e.target) && e.target !== startBtn) setStart(false);
     if (!langMenu.contains(e.target) && e.target !== langBtn) setLangMenu(false);
   });
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       setStart(false);
       setLangMenu(false);
       hideInfo();
     }
+  });
+
+  window.addEventListener('resize', () => {
+    setStart(false);
+    setLangMenu(false);
   });
 
   // React to language changes
@@ -327,7 +394,6 @@
   });
 
   // Initial render
-  I18n.applyDOM();
   renderLanguageMenu();
   renderTaskbar();
 })();

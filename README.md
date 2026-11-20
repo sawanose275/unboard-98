@@ -30,7 +30,7 @@
 UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly in your browser. It runs 100% client-side with zero backend dependencies, automatic browser language detection across 10 languages, and a translucent Windows 98 desktop interface.
 
 > [!NOTE]
-> Spotify's Web API only allows reordering playlists **created by you** or **collaborative** playlists. Editorial and algorithmically generated playlists (such as Discover Weekly or Daily Mix) are read-only.
+> Spotify's Web API only allows reordering playlists **created by you** or **collaborative** playlists. Editorial and algorithmically generated playlists (such as Discover Weekly or Daily Mix) are read-only, and local files (`spotify:local:`) are automatically skipped because Spotify's API cannot reorder them.
 
 ---
 
@@ -62,7 +62,7 @@ UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly 
 - **Any playlist size** — automatic pagination when loading and chunked updates when saving.
 - **Live preview and undo** — inspect the reordered tracklist before writing changes to Spotify.
 - **Automatic multi-language detection** — detects your browser language automatically (falls back to English) with instant switching from the taskbar: `EN`, `PT`, `ES`, `FR`, `DE`, `IT`, `JA`, `KO`, `ZH`, `RU`.
-- **Interactive desktop UI** — draggable windows, minimize/maximize controls, Start menu, and taskbar clock.
+- **Interactive desktop & mobile UI** — draggable windows, minimize/maximize controls, Start menu, taskbar clock, and responsive layout for touch devices.
 
 <div align="right"><a href="#unboard-98">[Top]</a></div>
 
@@ -149,9 +149,10 @@ unboard-98/
 
 ## Security & Privacy
 
-- **OAuth 2.0 with PKCE** — no client secret is stored or required.
-- **CSRF protection** — validates a cryptographic `state` parameter on every callback using ephemeral `sessionStorage`.
-- **Content Security Policy (CSP)** — restricts script execution to same-origin files and limits API calls strictly to `accounts.spotify.com` and `api.spotify.com`.
+- **OAuth 2.0 with PKCE** — uses unbiased cryptographic randomness (`crypto.getRandomValues`) with SHA-256 code challenge; no client secret is stored or required.
+- **Strict CSRF protection** — requires and validates a cryptographic `state` parameter on every callback using ephemeral `sessionStorage`.
+- **Content Security Policy (CSP)** — disallows inline scripts and styles (`script-src 'self'`, `style-src 'self'`), blocks plugins (`object-src 'none'`), and limits API requests strictly to `accounts.spotify.com` and `api.spotify.com`.
+- **Input & output hardening** — validates Client IDs, Redirect URIs, and HTTPS image URLs, encodes API path parameters, and escapes all HTML content and attributes.
 - **Minimal scopes** — only requests playlist read/modify and basic profile access (never requests your private email address).
 - **Local-only storage** — your Client ID and access tokens remain strictly in your browser and are never sent to any third-party server.
 

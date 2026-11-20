@@ -2,6 +2,8 @@
  * Spotify Auth — OAuth 2.0 PKCE Flow (100% client-side, user-supplied Client ID)
  */
 const SpotifyAuth = (() => {
+  'use strict';
+
   const SCOPES = [
     'playlist-read-private',
     'playlist-read-collaborative',
@@ -17,15 +19,77 @@ const SpotifyAuth = (() => {
   const REDIRECT_URI_KEY = 'unboard_redirect_uri';
   const ACTIVE_REDIRECT_KEY = 'unboard_active_redirect_uri';
 
+  // RFC 7636 unreserved 64-char alphabet (divides 256 evenly -> zero modulo bias)
+  const PKCE_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const CLIENT_ID_RE = /^[a-zA-Z0-9_-]{8,128}$/;
+
+  let refreshInFlight = null;
+
+  // ---- Safe storage helpers ----
+  function safeGet(key) {
+    try { return localStorage.getItem(key); } catch { return null; }
+  }
+
+  function safeSet(key, value) {
+    try { localStorage.setItem(key, value); } catch { /* ignore */ }
+  }
+
+  function safeRemove(key) {
+    try { localStorage.removeItem(key); } catch { /* ignore */ }
+  }
+
+  // ---- Ephemeral OAuth storage (sessionStorage, fallback to localStorage only on error) ----
+  function setTemp(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      safeSet(key, value);
+    }
+  }
+
+  function getTemp(key) {
+    try {
+      const v = sessionStorage.getItem(key);
+      if (v) return v;
+    } catch { /* ignore */ }
+    return safeGet(key);
+  }
+
+  function removeTemp(key) {
+    try { sessionStorage.removeItem(key); } catch { /* ignore */ }
+    safeRemove(key);
+  }
+
+  // ---- Validation ----
+  function isValidClientId(id) {
+    return typeof id === 'string' && CLIENT_ID_RE.test(id.trim());
+  }
+
+  function isValidRedirectUri(uri) {
+    if (typeof uri !== 'string' || !uri.trim()) return false;
+    try {
+      const parsed = new URL(uri.trim());
+      if (parsed.protocol === 'https:') return true;
+      if (parsed.protocol === 'http:') {
+        const host = parsed.hostname.toLowerCase();
+        return host === '127.0.0.1' || host === 'localhost' || host === '[::1]';
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  // ---- Config ----
   function getClientId() {
-    return (localStorage.getItem(CLIENT_ID_KEY) || '').trim();
+    return (safeGet(CLIENT_ID_KEY) || '').trim();
   }
 
   function setClientId(id) {
     if (id && id.trim()) {
-      localStorage.setItem(CLIENT_ID_KEY, id.trim());
+      safeSet(CLIENT_ID_KEY, id.trim());
     } else {
-      localStorage.removeItem(CLIENT_ID_KEY);
+      safeRemove(CLIENT_ID_KEY);
     }
   }
 
@@ -35,50 +99,33 @@ const SpotifyAuth = (() => {
   }
 
   function getRedirectUri() {
-    const saved = localStorage.getItem(REDIRECT_URI_KEY);
-    if (saved && saved.trim()) return saved.trim();
+    const saved = safeGet(REDIRECT_URI_KEY);
+    if (saved && isValidRedirectUri(saved)) return saved.trim();
     return getDefaultRedirectUri();
   }
 
   function setRedirectUri(uri) {
-    if (uri && uri.trim()) {
-      localStorage.setItem(REDIRECT_URI_KEY, uri.trim());
+    if (uri && isValidRedirectUri(uri)) {
+      safeSet(REDIRECT_URI_KEY, uri.trim());
     } else {
-      localStorage.removeItem(REDIRECT_URI_KEY);
+      safeRemove(REDIRECT_URI_KEY);
     }
-  }
-
-  // ---- Ephemeral storage helpers (sessionStorage with localStorage fallback) ----
-  function setTemp(key, value) {
-    try { sessionStorage.setItem(key, value); } catch { /* ignore */ }
-    try { localStorage.setItem(key, value); } catch { /* ignore */ }
-  }
-
-  function getTemp(key) {
-    try {
-      const v = sessionStorage.getItem(key);
-      if (v) return v;
-    } catch { /* ignore */ }
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-
-  function removeTemp(key) {
-    try { sessionStorage.removeItem(key); } catch { /* ignore */ }
-    try { localStorage.removeItem(key); } catch { /* ignore */ }
   }
 
   // ---- PKCE helpers ----
   function generateRandomString(length) {
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const values = crypto.getRandomValues(new Uint8Array(length));
-    return values.reduce((acc, x) => acc + possible[x % possible.length], '');
+    let out = '';
+    for (let i = 0; i < values.length; i++) {
+      out += PKCE_CHARSET[values[i] & 63];
+    }
+    return out;
   }
 
   async function sha256(plain) {
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error(I18n.t('errInsecureContext'));
+    }
     const encoder = new TextEncoder();
     const data = encoder.encode(plain);
     return window.crypto.subtle.digest('SHA-256', data);
@@ -87,8 +134,8 @@ const SpotifyAuth = (() => {
   function base64urlencode(buffer) {
     let str = '';
     const bytes = new Uint8Array(buffer);
-    for (const byte of bytes) {
-      str += String.fromCharCode(byte);
+    for (let i = 0; i < bytes.length; i++) {
+      str += String.fromCharCode(bytes[i]);
     }
     return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
@@ -101,20 +148,24 @@ const SpotifyAuth = (() => {
   // ---- Auth Flow ----
   async function login() {
     const clientId = getClientId();
-    if (!clientId) {
+    if (!isValidClientId(clientId)) {
       throw new Error(I18n.t('errConfigureClientId'));
     }
 
-    const codeVerifier = generateRandomString(64);
-    const state = generateRandomString(24);
     const redirectUri = getRedirectUri();
+    if (!isValidRedirectUri(redirectUri)) {
+      throw new Error(I18n.t('toastInvalidRedirectUri'));
+    }
+
+    const codeVerifier = generateRandomString(64);
+    const state = generateRandomString(32);
+
+    const hashed = await sha256(codeVerifier);
+    const codeChallenge = base64urlencode(hashed);
 
     setTemp(VERIFIER_KEY, codeVerifier);
     setTemp(STATE_KEY, state);
     setTemp(ACTIVE_REDIRECT_KEY, redirectUri);
-
-    const hashed = await sha256(codeVerifier);
-    const codeChallenge = base64urlencode(hashed);
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -155,7 +206,7 @@ const SpotifyAuth = (() => {
     removeTemp(STATE_KEY);
     removeTemp(ACTIVE_REDIRECT_KEY);
 
-    if (!codeVerifier || !clientId || (expectedState && returnedState !== expectedState)) {
+    if (!codeVerifier || !clientId || !expectedState || returnedState !== expectedState) {
       throw new Error(I18n.t('errMissingAuthData'));
     }
 
@@ -177,60 +228,80 @@ const SpotifyAuth = (() => {
     }
 
     const data = await response.json();
+    if (!data || !data.access_token) {
+      throw new Error(I18n.t('errToken', { err: 'missing access_token' }));
+    }
 
+    const expiresIn = Number(data.expires_in) || 3600;
     const tokenData = {
       access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: Date.now() + data.expires_in * 1000,
+      refresh_token: data.refresh_token || '',
+      expires_at: Date.now() + expiresIn * 1000,
     };
 
-    localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenData));
+    safeSet(TOKEN_KEY, JSON.stringify(tokenData));
     return true;
   }
 
   async function refreshToken() {
-    const tokenData = getTokenData();
-    const clientId = getClientId();
-    if (!tokenData?.refresh_token || !clientId) {
-      logout();
-      return false;
-    }
+    if (refreshInFlight) return refreshInFlight;
 
-    try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: clientId,
-          grant_type: 'refresh_token',
-          refresh_token: tokenData.refresh_token,
-        }),
-      });
-
-      if (!response.ok) {
+    refreshInFlight = (async () => {
+      const tokenData = getTokenData();
+      const clientId = getClientId();
+      if (!tokenData?.refresh_token || !clientId) {
         logout();
         return false;
       }
 
-      const data = await response.json();
+      try {
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            grant_type: 'refresh_token',
+            refresh_token: tokenData.refresh_token,
+          }),
+        });
 
-      const newTokenData = {
-        access_token: data.access_token,
-        refresh_token: data.refresh_token || tokenData.refresh_token,
-        expires_at: Date.now() + data.expires_in * 1000,
-      };
+        if (!response.ok) {
+          logout();
+          return false;
+        }
 
-      localStorage.setItem(TOKEN_KEY, JSON.stringify(newTokenData));
-      return true;
-    } catch {
-      logout();
-      return false;
-    }
+        const data = await response.json();
+        if (!data || !data.access_token) {
+          logout();
+          return false;
+        }
+
+        const expiresIn = Number(data.expires_in) || 3600;
+        const newTokenData = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token || tokenData.refresh_token,
+          expires_at: Date.now() + expiresIn * 1000,
+        };
+
+        safeSet(TOKEN_KEY, JSON.stringify(newTokenData));
+        return true;
+      } catch {
+        logout();
+        return false;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+
+    return refreshInFlight;
   }
 
   function getTokenData() {
     try {
-      return JSON.parse(localStorage.getItem(TOKEN_KEY));
+      const raw = safeGet(TOKEN_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : null;
     } catch {
       return null;
     }
@@ -238,9 +309,9 @@ const SpotifyAuth = (() => {
 
   async function getAccessToken() {
     const tokenData = getTokenData();
-    if (!tokenData) return null;
+    if (!tokenData || !tokenData.access_token) return null;
 
-    if (Date.now() > tokenData.expires_at - 300000) {
+    if (Date.now() > (Number(tokenData.expires_at) || 0) - 300000) {
       const refreshed = await refreshToken();
       if (!refreshed) return null;
       return getTokenData()?.access_token || null;
@@ -255,15 +326,18 @@ const SpotifyAuth = (() => {
   }
 
   function logout() {
-    localStorage.removeItem(TOKEN_KEY);
+    safeRemove(TOKEN_KEY);
     removeTemp(VERIFIER_KEY);
     removeTemp(STATE_KEY);
     removeTemp(ACTIVE_REDIRECT_KEY);
   }
 
   return {
+    isValidClientId,
+    isValidRedirectUri,
     getClientId,
     setClientId,
+    getDefaultRedirectUri,
     getRedirectUri,
     setRedirectUri,
     login,
