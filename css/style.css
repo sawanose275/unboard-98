@@ -1041,6 +1041,12 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .toast.error::before {
   background-image: url("../icons/error.png");
 }
+.toast.plain {
+  padding: 9px 12px;
+}
+.toast.plain::before {
+  display: none;
+}
 .toast::after {
   content: "";
   position: absolute;

@@ -392,7 +392,7 @@
         });
 
         hideProgressModal();
-        toast(I18n.t('toastSavedSuccess', { name: currentPlaylist.name }), 'success');
+        toast(I18n.t('toastSavedSuccess', { name: currentPlaylist.name }), 'plain');
 
         originalTracks = [...currentTracks];
         previousTracks = null;
