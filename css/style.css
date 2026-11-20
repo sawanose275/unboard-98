@@ -646,7 +646,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .tracks-header,
 .track-row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 2fr) minmax(0, 1.3fr) 108px 56px;
+  grid-template-columns: 42px minmax(0, 2fr) minmax(0, 1.3fr) 108px 62px;
   align-items: center;
 }
 
@@ -662,8 +662,8 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   text-overflow: ellipsis;
   text-align: left;
 }
-.tracks-header .track-num,
-.tracks-header .track-duration-col { text-align: center; }
+.tracks-header .track-num { text-align: center; }
+.tracks-header .track-duration-col { text-align: right; }
 
 .tracks-scroll {
   flex: 1;
@@ -1144,7 +1144,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   }
 
   .tracks-header,
-  .track-row { grid-template-columns: 34px minmax(0, 1fr) 48px; }
+  .track-row { grid-template-columns: 34px minmax(0, 1fr) 56px; }
   .track-album-col,
   .track-date-col { display: none; }
 
