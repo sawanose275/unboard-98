@@ -1074,6 +1074,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 
 .dialog-row { display: flex; gap: 12px; align-items: flex-start; }
 .dialog-row p { margin-top: 4px; line-height: 1.45; color: #2b2f3d; }
+#info-text { min-width: 0; overflow-wrap: anywhere; }
 #info-text p + p { margin-top: 6px; }
 
 .progress98 {
