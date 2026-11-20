@@ -865,6 +865,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   border-radius: 1px;
   transition: background 0.08s ease, color 0.08s ease;
 }
+.lang-item.selected { font-weight: 600; color: var(--navy); }
 .lang-item:hover { background: var(--navy); color: #fff; }
 .lang-item .lang-code {
   font-size: 10.5px;

@@ -32,13 +32,11 @@
 
     langMenu.innerHTML = '';
 
-    const CHECK_HTML = '<img class="ico ico-14" src="icons/success.png" alt="" />';
-
     const autoRow = document.createElement('div');
-    autoRow.className = 'lang-item';
+    autoRow.className = 'lang-item' + (pref === 'auto' ? ' selected' : '');
     autoRow.innerHTML = `
       <span>${I18n.t('langAuto', { lang: I18n.getNativeName(detected) })}</span>
-      <span class="lang-check">${pref === 'auto' ? CHECK_HTML : ''}</span>
+      <span class="lang-check">${pref === 'auto' ? '•' : ''}</span>
     `;
     autoRow.addEventListener('click', () => {
       I18n.setLang('auto');
@@ -52,14 +50,14 @@
 
     I18n.LANGUAGES.forEach(l => {
       const row = document.createElement('div');
-      row.className = 'lang-item';
       const isSelected = pref === l.code;
+      row.className = 'lang-item' + (isSelected ? ' selected' : '');
       row.innerHTML = `
         <span style="display:flex;align-items:center;gap:8px;">
           <span class="lang-code">${l.badge}</span>
           <span>${l.native}</span>
         </span>
-        <span class="lang-check">${isSelected ? CHECK_HTML : ''}</span>
+        <span class="lang-check">${isSelected ? '•' : ''}</span>
       `;
       row.addEventListener('click', () => {
         I18n.setLang(l.code);
