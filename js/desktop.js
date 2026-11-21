@@ -124,6 +124,7 @@
   }
 
   const TASK_ICONS = {
+    'login-screen': 'assets/icons/favicon.png',
     'playlists-screen': 'assets/icons/playlists.png',
     'organizer-screen': 'assets/icons/organizer.ico',
   };
