@@ -69,7 +69,7 @@ u { text-decoration: underline; text-underline-offset: 2px; }
 .bg-layer {
   position: absolute;
   inset: -4px;
-  background-image: url("../gifs/ondas-azuis.gif");
+  background-image: url("../assets/gifs/ondas-azuis.gif");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1033,13 +1033,13 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   top: 8px;
   width: 18px;
   height: 18px;
-  background: url("../icons/windows-vista-icons/Windows Vista Icons/Alert002.ico") center / contain no-repeat;
+  background: url("../assets/icons/info.ico") center / contain no-repeat;
 }
 .toast.success::before {
-  background-image: url("../icons/windows-vista-icons/Windows Vista Icons/Alert013.ico");
+  background-image: url("../assets/icons/success.ico");
 }
 .toast.error::before {
-  background-image: url("../icons/windows-vista-icons/Windows Vista Icons/Alert005.ico");
+  background-image: url("../assets/icons/error.ico");
 }
 .toast.plain {
   padding: 9px 12px;

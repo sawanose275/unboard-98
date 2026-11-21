@@ -124,9 +124,8 @@
   }
 
   const TASK_ICONS = {
-    'login-screen': 'icons/windows-vista-icons/Windows Vista Icons/Media012.ico',
-    'playlists-screen': 'icons/playlists.png',
-    'organizer-screen': 'icons/windows-vista-icons/Windows Vista Icons/App023.ico',
+    'playlists-screen': 'assets/icons/playlists.png',
+    'organizer-screen': 'assets/icons/organizer.ico',
   };
 
   function updatePlaylistsStatus() {
@@ -176,15 +175,18 @@
     btn.type = 'button';
     btn.className = 'btn98 task-btn' + (current.classList.contains('minimized') ? '' : ' active');
 
-    const img = document.createElement('img');
-    img.className = 'ico ico-16';
-    img.src = TASK_ICONS[current.id] || 'icons/unboard.png';
-    img.alt = '';
+    const iconSrc = TASK_ICONS[current.id];
+    if (iconSrc) {
+      const img = document.createElement('img');
+      img.className = 'ico ico-16';
+      img.src = iconSrc;
+      img.alt = '';
+      btn.appendChild(img);
+    }
 
     const label = document.createElement('span');
     label.textContent = screenTitle(current);
 
-    btn.appendChild(img);
     btn.appendChild(label);
     btn.title = label.textContent;
     btn.addEventListener('click', () => {
@@ -318,12 +320,12 @@
 
   function handleCommand(cmd) {
     switch (cmd) {
-      case 'about': showInfo(I18n.t('aboutTitle'), 'icons/unboard.png', I18n.t('aboutHtml')); break;
-      case 'help': showInfo(I18n.t('helpTitle'), 'icons/windows-vista-icons/Windows Vista Icons/Alert035.ico', I18n.t('helpHtml')); break;
+      case 'about': showInfo(I18n.t('aboutTitle'), 'assets/icons/unboard.png', I18n.t('aboutHtml')); break;
+      case 'help': showInfo(I18n.t('helpTitle'), 'assets/icons/help.ico', I18n.t('helpHtml')); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('startPlaylists'), 'icons/playlists.png', I18n.t('loginFirstHtml'));
+          showInfo(I18n.t('startPlaylists'), 'assets/icons/playlists.png', I18n.t('loginFirstHtml'));
         } else if ($('#organizer-screen').classList.contains('active')) {
           $('#back-btn').click();
         } else {
@@ -333,7 +335,7 @@
         break;
       case 'logout':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('logoutBtn'), 'icons/windows-vista-icons/Windows Vista Icons/Alert005.ico', I18n.t('notLoggedInHtml'));
+          showInfo(I18n.t('logoutBtn'), 'assets/icons/error.ico', I18n.t('notLoggedInHtml'));
         } else {
           $('#logout-btn').click();
         }

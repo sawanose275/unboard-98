@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/License-MIT-222222?style=flat-square" alt="MIT License" />
 </p>
 
-<img src="gifs/ondas-azuis.gif" alt="UnBoard 98 Background" width="520" />
+<img src="assets/gifs/ondas-azuis.gif" alt="UnBoard 98 Background" width="520" />
 
 </div>
 
@@ -132,9 +132,10 @@ unboard-98/
 │   ├── sorters.js          # 18 shuffle and sorting algorithms
 │   ├── app.js              # Playlist loading, preview, and saving logic
 │   └── desktop.js          # Window dragging, taskbar, Start menu, and language switcher
-├── gifs/
-│   └── ondas-azuis.gif     # Animated desktop background
-├── icons/                  # Retro Windows Vista / Aero PNG icons
+├── assets/
+│   ├── gifs/
+│   │   └── ondas-azuis.gif # Animated desktop background
+│   └── icons/              # Frutiger Aero / Windows Vista icons & site favicon
 ├── robots.txt              # Search engine crawl rules
 ├── sitemap.xml             # Sitemap for search indexing
 ├── .nojekyll               # Disables Jekyll processing on GitHub Pages
