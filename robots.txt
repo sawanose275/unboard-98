@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sawanose275.github.io/unboard-98/sitemap.xml
