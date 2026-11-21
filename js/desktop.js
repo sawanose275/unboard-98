@@ -124,9 +124,9 @@
   }
 
   const TASK_ICONS = {
-    'login-screen': 'icons/unboard.png',
+    'login-screen': 'icons/windows-vista-icons/Windows Vista Icons/Media012.ico',
     'playlists-screen': 'icons/playlists.png',
-    'organizer-screen': 'icons/organizer.png',
+    'organizer-screen': 'icons/windows-vista-icons/Windows Vista Icons/App023.ico',
   };
 
   function updatePlaylistsStatus() {
@@ -319,7 +319,7 @@
   function handleCommand(cmd) {
     switch (cmd) {
       case 'about': showInfo(I18n.t('aboutTitle'), 'icons/unboard.png', I18n.t('aboutHtml')); break;
-      case 'help': showInfo(I18n.t('helpTitle'), 'icons/help.png', I18n.t('helpHtml')); break;
+      case 'help': showInfo(I18n.t('helpTitle'), 'icons/windows-vista-icons/Windows Vista Icons/Alert035.ico', I18n.t('helpHtml')); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {
@@ -333,7 +333,7 @@
         break;
       case 'logout':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('logoutBtn'), 'icons/error.png', I18n.t('notLoggedInHtml'));
+          showInfo(I18n.t('logoutBtn'), 'icons/windows-vista-icons/Windows Vista Icons/Alert005.ico', I18n.t('notLoggedInHtml'));
         } else {
           $('#logout-btn').click();
         }
