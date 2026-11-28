@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/License-MIT-222222?style=flat-square" alt="MIT License" />
 </p>
 
-<img src="assets/gifs/ondas-azuis.gif" alt="UnBoard 98 Background" width="520" />
+<img src="assets/backgrounds/ondas-azuis.gif" alt="UnBoard 98 Background" width="520" />
 
 </div>
 
@@ -122,23 +122,24 @@ Then open `http://127.0.0.1:5500/` in your browser.
 
 ```text
 unboard-98/
-├── index.html              # Main HTML shell (Windows 98 desktop layout)
-├── css/
-│   └── style.css           # Translucent modernized Windows 98 styling
-├── js/
-│   ├── i18n.js             # Automatic language detection + 10 languages
-│   ├── spotify-auth.js     # OAuth 2.0 PKCE + CSRF state authentication
-│   ├── spotify-api.js      # Spotify Web API wrapper (/items with /tracks fallback)
-│   ├── sorters.js          # 18 shuffle and sorting algorithms
-│   ├── app.js              # Playlist loading, preview, and saving logic
-│   └── desktop.js          # Window dragging, taskbar, Start menu, and language switcher
+├── index.html                    # Main HTML shell (Windows 98 desktop layout)
+├── src/
+│   ├── css/
+│   │   └── style.css             # Translucent modernized Windows 98 styling
+│   └── js/
+│       ├── i18n.js               # Automatic language detection + 10 languages
+│       ├── spotify-auth.js       # OAuth 2.0 PKCE + CSRF state authentication
+│       ├── spotify-api.js        # Spotify Web API wrapper (/items with /tracks fallback)
+│       ├── sorters.js            # 18 shuffle and sorting algorithms
+│       ├── app.js                # Playlist loading, preview, and saving logic
+│       └── desktop.js            # Window dragging, taskbar, Start menu, and language switcher
 ├── assets/
-│   ├── gifs/
-│   │   └── ondas-azuis.gif # Animated desktop background
-│   └── icons/              # Frutiger Aero / Windows Vista icons & site favicon
-├── robots.txt              # Search engine crawl rules
-├── sitemap.xml             # Sitemap for search indexing
-├── .nojekyll               # Disables Jekyll processing on GitHub Pages
+│   ├── backgrounds/
+│   │   └── ondas-azuis.gif       # Animated desktop background
+│   └── icons/                    # Frutiger Aero / Windows Vista icons & site favicon
+├── robots.txt                    # Search engine crawl rules
+├── sitemap.xml                   # Sitemap for search indexing
+├── .nojekyll                     # Disables Jekyll processing on GitHub Pages
 ├── .gitignore
 ├── LICENSE
 └── README.md
