@@ -136,7 +136,7 @@ UnBoard-98/
 ├── assets/
 │   ├── backgrounds/
 │   │   └── ondas-azuis.gif       # Animated desktop background
-│   └── icons/                    # Frutiger Aero / Windows Vista icons & site favicon
+│   └── icons/                    # Windows 98 icons & site favicon
 ├── robots.txt                    # Search engine crawl rules
 ├── sitemap.xml                   # Sitemap for search indexing
 ├── .nojekyll                     # Disables Jekyll processing on GitHub Pages
