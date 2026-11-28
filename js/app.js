@@ -267,10 +267,7 @@
     bindEvents();
 
     try {
-      const isCallback = await SpotifyAuth.handleCallback();
-      if (isCallback) {
-        toast(I18n.t('toastLoginSuccess'), 'success');
-      }
+      await SpotifyAuth.handleCallback();
     } catch (err) {
       toast(err.message, 'error');
     }
@@ -347,7 +344,6 @@
       SpotifyAuth.logout();
       resetAppState();
       showScreen('login');
-      toast(I18n.t('toastLoggedOut'), 'info');
     });
 
     els.backBtn.addEventListener('click', () => {
@@ -392,7 +388,6 @@
         });
 
         hideProgressModal();
-        toast(I18n.t('toastSavedSuccess', { name: currentPlaylist.name }), 'plain');
 
         originalTracks = [...currentTracks];
         previousTracks = null;
