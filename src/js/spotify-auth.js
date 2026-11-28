@@ -100,7 +100,15 @@ const SpotifyAuth = (() => {
 
   function getRedirectUri() {
     const saved = safeGet(REDIRECT_URI_KEY);
-    if (saved && isValidRedirectUri(saved)) return saved.trim();
+    if (saved && isValidRedirectUri(saved)) {
+      const trimmed = saved.trim();
+      const currentDefault = getDefaultRedirectUri();
+      if (trimmed !== currentDefault && trimmed.toLowerCase() === currentDefault.toLowerCase()) {
+        safeSet(REDIRECT_URI_KEY, currentDefault);
+        return currentDefault;
+      }
+      return trimmed;
+    }
     return getDefaultRedirectUri();
   }
 
