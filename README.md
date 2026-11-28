@@ -5,7 +5,7 @@
 **A client-side Spotify playlist organizer with a modernized Windows 98 aesthetic.**
 
 <p>
-  <a href="https://sawanose275.github.io/unboard-98/">Live Site</a> ·
+  <a href="https://sawanose275.github.io/UnBoard-98/">Live Site</a> ·
   <a href="#features">Features</a> ·
   <a href="#setup">Setup</a> ·
   <a href="#running-locally">Running Locally</a> ·
@@ -70,7 +70,7 @@ UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly 
 
 ## Setup
 
-**Live URL:** https://sawanose275.github.io/unboard-98/
+**Live URL:** https://sawanose275.github.io/UnBoard-98/
 
 > [!IMPORTANT]
 > Spotify restricts apps in **Development Mode** to a small manual allowlist of accounts. Because of this, each user creates their own free Spotify app (takes less than a minute) and pastes their **Client ID** in UnBoard 98. Your Client ID is stored only in your own browser.
@@ -80,7 +80,7 @@ UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly 
 1. Open the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and click **Create App**.
 2. Fill in any app name and description.
 3. Under **Redirect URIs**, add the exact URL where you will use UnBoard 98:
-   - **Live site:** `https://sawanose275.github.io/unboard-98/`
+   - **Live site:** `https://sawanose275.github.io/UnBoard-98/`
    - **Local testing:** `http://127.0.0.1:5500/`
 4. Under **APIs used**, check **Web API**.
 5. Click **Save** and copy your **Client ID**.
@@ -90,7 +90,7 @@ UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly 
 
 ### 2. Connect and Organize
 
-1. Open [UnBoard 98](https://sawanose275.github.io/unboard-98/).
+1. Open [UnBoard 98](https://sawanose275.github.io/UnBoard-98/).
 2. Click **Configure Client ID**, paste your Client ID, and click **Save**.
 3. Click **Log in with Spotify** and authorize access.
 4. Select one of your playlists, choose a shuffle or sort mode, and click **Save to Spotify**.
@@ -104,8 +104,8 @@ UnBoard 98 lets you shuffle and sort Spotify playlists of **any size** directly 
 Clone the repository and serve it with any static HTTP server:
 
 ```bash
-git clone https://github.com/sawanose275/unboard-98.git
-cd unboard-98
+git clone https://github.com/sawanose275/UnBoard-98.git
+cd UnBoard-98
 python3 -m http.server 5500 --bind 127.0.0.1
 ```
 
@@ -121,7 +121,7 @@ Then open `http://127.0.0.1:5500/` in your browser.
 ## Project Structure
 
 ```text
-unboard-98/
+UnBoard-98/
 ├── index.html                    # Main HTML shell (Windows 98 desktop layout)
 ├── src/
 │   ├── css/
