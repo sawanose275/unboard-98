@@ -1033,13 +1033,13 @@ u { text-decoration: underline; text-underline-offset: 2px; }
   top: 8px;
   width: 18px;
   height: 18px;
-  background: url("../../assets/icons/about.png") center / contain no-repeat;
+  background: url("../../assets/icons/about.png?v=2") center / contain no-repeat;
 }
 .toast.success::before {
-  background-image: url("../../assets/icons/success.ico");
+  background-image: url("../../assets/icons/success.ico?v=2");
 }
 .toast.error::before {
-  background-image: url("../../assets/icons/error.ico");
+  background-image: url("../../assets/icons/error.ico?v=2");
 }
 .toast::after {
   content: "";

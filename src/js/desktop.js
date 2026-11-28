@@ -124,9 +124,9 @@
   }
 
   const TASK_ICONS = {
-    'login-screen': 'assets/icons/favicon.png',
-    'playlists-screen': 'assets/icons/playlists.png',
-    'organizer-screen': 'assets/icons/playlists.png',
+    'login-screen': 'assets/icons/favicon.png?v=2',
+    'playlists-screen': 'assets/icons/playlists.png?v=2',
+    'organizer-screen': 'assets/icons/playlists.png?v=2',
   };
 
   function updatePlaylistsStatus() {
@@ -321,12 +321,12 @@
 
   function handleCommand(cmd) {
     switch (cmd) {
-      case 'about': showInfo(I18n.t('aboutTitle'), 'assets/icons/unboard.png', I18n.t('aboutHtml')); break;
-      case 'help': showInfo(I18n.t('helpTitle'), 'assets/icons/help.ico', I18n.t('helpHtml')); break;
+      case 'about': showInfo(I18n.t('aboutTitle'), 'assets/icons/unboard.png?v=2', I18n.t('aboutHtml')); break;
+      case 'help': showInfo(I18n.t('helpTitle'), 'assets/icons/help.ico?v=2', I18n.t('helpHtml')); break;
       case 'language': setLangMenu(true); break;
       case 'playlists':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('startPlaylists'), 'assets/icons/playlists.png', I18n.t('loginFirstHtml'));
+          showInfo(I18n.t('startPlaylists'), 'assets/icons/playlists.png?v=2', I18n.t('loginFirstHtml'));
         } else if ($('#organizer-screen').classList.contains('active')) {
           $('#back-btn').click();
         } else {
@@ -336,7 +336,7 @@
         break;
       case 'logout':
         if (!isLoggedIn()) {
-          showInfo(I18n.t('logoutBtn'), 'assets/icons/error.ico', I18n.t('notLoggedInHtml'));
+          showInfo(I18n.t('logoutBtn'), 'assets/icons/error.ico?v=2', I18n.t('notLoggedInHtml'));
         } else {
           $('#logout-btn').click();
         }
